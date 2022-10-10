@@ -26,7 +26,7 @@ const UserInterface = () => {
 
   return (
     <div className="fixed top-0 left-0 z-10 flex flex-col w-full">
-      <div className="flex justify-start w-full p-4 bg-slate-200">
+      <div className="flex justify-start w-full p-4 bg-gray-800">
         {/* {road.length === 0 && (
           <Button
             isActive={currUISelection === UISelection.ADDROAD}

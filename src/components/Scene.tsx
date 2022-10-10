@@ -24,9 +24,7 @@ function Scene() {
 
   return (
     <Canvas gl={{ antialias: false }} dpr={2} camera={camera}>
-      <color attach="background" args={['#f0f0f0']} />
-
-      {/* <OrbitControls /> */}
+      <color attach="background" args={['#000']} />
 
       <Lighting />
       <Controls />
@@ -36,7 +34,7 @@ function Scene() {
         <Chunk index={chunk.index} worldPosition={chunk.origin} blocks={chunk.blocks} key={`chunk-${chunk.index}}`} />
       ))}
 
-      {/* <PostProcessing /> */}
+      <PostProcessing />
     </Canvas>
   );
 }

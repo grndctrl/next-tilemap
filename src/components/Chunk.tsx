@@ -268,7 +268,7 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
 
       if (block) {
         console.log('🚀 ~ file: Chunk.tsx ~ line 271 ~ calcTableIndex(block.vertices)', calcTableIndex(block.vertices));
-        const geometry = blockGeometries[block.index];
+        // const geometry = blockGeometries[block.index];
 
         point.sub(block.worldPosition);
 
@@ -331,12 +331,26 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
           }
         }
 
-        if (geometry) {
-          setBlockHovered({
-            block,
-            vertex: hoveredVertex,
-            geometry,
-          });
+        const neighbourBlocks = block.neighbours.map((neighbour) => (neighbour > -1 ? getBlock(neighbour) : null));
+        const neighbourVertices: boolean[] = getNeighbourVerticesForNeighboursInBlocks(neighbourBlocks);
+
+        const topTriangles = getTopTriangles(block.vertices, [
+          neighbourVertices[25],
+          neighbourVertices[26],
+          neighbourVertices[27],
+          neighbourVertices[28],
+          neighbourVertices[29],
+        ]);
+
+        if (topTriangles) {
+          const geometry = geometryFromTriangles(topTriangles);
+          if (geometry) {
+            setBlockHovered({
+              block,
+              vertex: hoveredVertex,
+              geometry,
+            });
+          }
         }
       }
     }
@@ -351,7 +365,7 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
       {geometry && (
         <>
           <mesh ref={mesh} geometry={geometry} onPointerLeave={handlePointerLeave}>
-            <meshNormalMaterial />
+            <meshStandardMaterial color="#2dd4bf" />
           </mesh>
         </>
       )}
