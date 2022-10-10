@@ -52,8 +52,6 @@ const calcChunkWorldPositionForIndex = (index: number): Vector3 => {
   const offset = new Vector3(x, y, z);
 
   const position = arrayPosition.sub(offset).multiply(chunkSize);
-  console.log('🚀 ~ file: chunkUtils.ts ~ line 56 ~ position', position);
-
   return position;
 };
 

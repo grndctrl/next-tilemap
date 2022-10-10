@@ -11,13 +11,8 @@ const SceneInterface = () => {
   const { leftButton, rightButton, drag } = useMouseControls();
 
   useEffect(() => {
-    console.log(currUISelection, UISelection.SCULPT);
-  }, [currUISelection]);
-
-  useEffect(() => {
     if (leftButton) {
       if (currUISelection === UISelection.SCULPT) {
-        console.log('sculpt block');
         if (blockHovered && blockMutated === null) {
           if (blockHovered.block.neighbours.length === 0) {
             console.log('TOCK');

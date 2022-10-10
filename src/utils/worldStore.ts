@@ -12,6 +12,8 @@ import { Vector3 } from 'three';
 import create from 'zustand';
 import { BlockType, calcNeighboursForWorldPosition } from './blockUtils';
 import createStore, { Schema, Store } from './typedArrayStore';
+import worldJSON from '../../public/world.json';
+import { isEqual } from 'lodash';
 
 const { worldSize, totalBlocksInChunk, totalBlocksInWorld, totalChunksInWorld } = getMeasurements();
 
@@ -76,23 +78,25 @@ const isWorldPositionWithinBounds = (worldPosition: Vector3): boolean => {
 
 class Chunk {
   index: number;
+  size: number;
   origin: Vector3;
   blocks: number[];
 
-  constructor(
-    index: number,
-    origin: Vector3,
-    size: number,
-    storeLocalPosition: Store,
-    storeWorldPosition: Store,
-    storeVertices: Store,
-    storeNeighbours: Store
-  ) {
+  constructor(index: number, origin: Vector3, size: number) {
     this.index = index;
+    this.size = size;
     this.origin = origin;
+
     this.blocks = Array.from({ length: totalBlocksInChunk }).map((_, index) => {
       const id = this.index * size + index;
-      const localPosition = calcBlockPositionForIndex(index);
+      return id;
+    });
+  }
+
+  public init(storeLocalPosition: Store, storeWorldPosition: Store, storeVertices: Store, storeNeighbours: Store) {
+    for (let i = 0; i < this.blocks.length; i++) {
+      const id = this.blocks[i];
+      const localPosition = calcBlockPositionForIndex(i);
       const worldPosition = localPosition.clone().add(this.origin);
 
       storeLocalPosition.x[id] = localPosition.x;
@@ -102,6 +106,10 @@ class Chunk {
       storeWorldPosition.x[id] = worldPosition.x;
       storeWorldPosition.y[id] = worldPosition.y;
       storeWorldPosition.z[id] = worldPosition.z;
+
+      for (let j = 0; j < 14; j++) {
+        storeVertices[j][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
+      }
 
       storeVertices[0][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
       storeVertices[1][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
@@ -139,9 +147,40 @@ class Chunk {
       storeNeighbours.front[id] = neighbours[3];
       storeNeighbours.bottom[id] = neighbours[4];
       storeNeighbours.top[id] = neighbours[5];
+    }
+  }
 
-      return id;
-    });
+  public initWithData(
+    data: any,
+    storeLocalPosition: Store,
+    storeWorldPosition: Store,
+    storeVertices: Store,
+    storeNeighbours: Store
+  ) {
+    console.log(this.blocks);
+    for (let i = 0; i < this.blocks.length; i++) {
+      const id = this.blocks[i];
+      console.log('🚀 ~ file: worldStore.ts ~ line 159 ~ id', id);
+
+      storeLocalPosition.x[id] = data.localPosition.x[id];
+      storeLocalPosition.y[id] = data.localPosition.y[id];
+      storeLocalPosition.z[id] = data.localPosition.z[id];
+
+      storeWorldPosition.x[id] = data.worldPosition.x[id];
+      storeWorldPosition.y[id] = data.worldPosition.y[id];
+      storeWorldPosition.z[id] = data.worldPosition.z[id];
+
+      for (let j = 0; j < 14; j++) {
+        storeVertices[j][i] = data.vertices[j][i];
+      }
+
+      storeNeighbours.left[id] = data.neighbours.left[id];
+      storeNeighbours.right[id] = data.neighbours.right[id];
+      storeNeighbours.back[id] = data.neighbours.back[id];
+      storeNeighbours.front[id] = data.neighbours.front[id];
+      storeNeighbours.bottom[id] = data.neighbours.bottom[id];
+      storeNeighbours.top[id] = data.neighbours.top[id];
+    }
   }
 }
 
@@ -150,34 +189,61 @@ class World {
   private worldPosition: Store;
   private vertices: Store;
   private neighbours: Store;
-  private totalBlocks: number;
-  private totalChunks: number;
+  private totalBlocksInWorld: number;
+  private totalChunksInWorld: number;
   private totalBlocksInChunk: number;
 
   public chunks: Chunk[];
 
-  public constructor(totalChunks: number, totalBlocks: number) {
-    this.totalBlocks = totalBlocks;
-    this.totalChunks = totalChunks;
-    this.totalBlocksInChunk = totalBlocks / totalChunks;
-    this.localPosition = createStore(localPositionSchema, totalBlocks);
-    this.worldPosition = createStore(worldPositionSchema, totalBlocks);
-    this.vertices = createStore(verticesSchema, totalBlocks);
-    this.neighbours = createStore(neighboursSchema, totalBlocks);
+  public constructor(totalChunksInWorld: number, totalBlocksInChunk: number) {
+    this.totalChunksInWorld = totalChunksInWorld;
+    this.totalBlocksInChunk = totalBlocksInChunk;
+    this.totalBlocksInWorld = totalChunksInWorld * totalBlocksInChunk;
 
-    this.chunks = Array.from({ length: totalChunks }).map((_, index) => {
+    this.localPosition = createStore(localPositionSchema, this.totalBlocksInWorld);
+    this.worldPosition = createStore(worldPositionSchema, this.totalBlocksInWorld);
+    this.vertices = createStore(verticesSchema, this.totalBlocksInWorld);
+    this.neighbours = createStore(neighboursSchema, this.totalBlocksInWorld);
+
+    this.chunks = [];
+  }
+
+  //
+
+  public init() {
+    this.chunks = Array.from({ length: this.totalChunksInWorld }).map((_, index) => {
       const origin = calcChunkWorldPositionForIndex(index);
-      return new Chunk(
-        index,
-        origin,
-        this.totalBlocksInChunk,
-        this.localPosition,
-        this.worldPosition,
-        this.vertices,
-        this.neighbours
-      );
+
+      const chunk = new Chunk(index, origin, this.totalBlocksInChunk);
+      chunk.init(this.localPosition, this.worldPosition, this.vertices, this.neighbours);
+
+      return chunk;
     });
   }
+
+  public initFromJSON(data: any) {
+    console.log('🚀 ~ file: worldStore.ts ~ line 219 ~ data', data);
+    if (
+      this.totalBlocksInChunk !== data.totalBlocksInChunk ||
+      this.totalChunksInWorld !== data.totalChunksInWorld ||
+      this.totalBlocksInWorld !== data.totalBlocksInWorld
+    ) {
+      return console.error('world sizes are different');
+    }
+
+    this.chunks = Array.from({ length: this.totalChunksInWorld }).map((_, index) => {
+      const origin = calcChunkWorldPositionForIndex(index);
+
+      const chunk = new Chunk(index, origin, this.totalBlocksInChunk);
+      chunk.initWithData(data, this.localPosition, this.worldPosition, this.vertices, this.neighbours);
+
+      return chunk;
+    });
+
+    console.log(this);
+  }
+
+  //
 
   private isActive(id: number) {
     return this.getVertices(id).findIndex((value) => value === true) > -1;
@@ -235,7 +301,7 @@ class World {
       id = query;
     }
 
-    if (id >= 0 && id < this.totalBlocks) {
+    if (id >= 0 && id < this.totalBlocksInWorld) {
       return {
         id: id,
         index: id % this.totalBlocksInChunk,
@@ -286,9 +352,40 @@ class World {
     this.setNeighbours(id, neighbours);
     this.setVertices(id, vertices);
   }
+
+  //
+
+  public exportJSON() {
+    const totalBlocksInChunk = this.totalBlocksInChunk;
+    const totalChunksInWorld = this.totalChunksInWorld;
+    const totalBlocksInWorld = this.totalBlocksInWorld;
+
+    const localPosition = this.localPosition;
+    const worldPosition = this.worldPosition;
+    const vertices = this.vertices;
+    const neighbours = this.neighbours;
+    const chunks = this.chunks;
+
+    const json = JSON.stringify({
+      totalBlocksInChunk,
+      totalChunksInWorld,
+      totalBlocksInWorld,
+      localPosition,
+      worldPosition,
+      vertices,
+      neighbours,
+      chunks,
+    });
+
+    return json;
+  }
 }
 
-const world = new World(totalChunksInWorld, totalBlocksInWorld);
+//
+
+const world = new World(totalChunksInWorld, totalBlocksInChunk);
+world.init();
+// world.initFromJSON(worldJSON);
 
 interface ChunkState {
   chunkRenderKeys: number[];
@@ -323,6 +420,7 @@ const useWorldStore = () => {
   const { chunkRenderKeys, updateRenderKey } = useChunkState();
 
   const getBlock = useCallback((query: number | Vector3) => world.getBlock(query), []);
+
   const setBlock = useCallback(
     (block: BlockType) => {
       updateRenderKey(block.parentChunk);
@@ -330,6 +428,7 @@ const useWorldStore = () => {
     },
     [updateRenderKey]
   );
+
   const setBlocks = useCallback(
     (blocks: BlockType[]) => {
       const uniqueChunks = new Set<number>([]);
@@ -359,7 +458,11 @@ const useWorldStore = () => {
     [updateRenderKey]
   );
 
-  return { chunks, getBlock, setBlock, setBlocks, chunkRenderKeys };
+  const exportJSON = useCallback(() => {
+    return world.exportJSON();
+  }, []);
+
+  return { chunks, getBlock, setBlock, setBlocks, chunkRenderKeys, updateRenderKey, exportJSON };
 };
 
 export { useWorldStore };

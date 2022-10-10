@@ -258,6 +258,10 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
     }
   });
 
+  useEffect(() => {
+    console.log(geometry);
+  }, [geometry]);
+
   const handleIntersection = ({ face, object, point }: Intersection) => {
     const { geometry } = object as Mesh;
     const idBufferAttribute = geometry.getAttribute('id');

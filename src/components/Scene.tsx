@@ -13,7 +13,7 @@ import { OrthographicCamera } from 'three';
 import { useControls } from 'leva';
 
 function Scene() {
-  const { chunks } = useWorldStore();
+  const { chunks, exportJSON } = useWorldStore();
 
   const camera = new OrthographicCamera();
   camera.position.set(-100, 100, 100);
@@ -21,6 +21,10 @@ function Scene() {
   camera.rotation.set(-30 * (Math.PI / 180), -Math.PI / 4, 0, 'YXZ');
   camera.near = 0.1;
   camera.far = 1000;
+
+  useEffect(() => {
+    exportJSON();
+  }, []);
 
   return (
     <Canvas gl={{ antialias: false }} dpr={2} camera={camera}>

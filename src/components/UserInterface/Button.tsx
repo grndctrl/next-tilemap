@@ -4,10 +4,10 @@ type ButtonProps = {
   children: React.ReactNode;
   isActive: boolean;
   onClick: () => void;
-  currUISelection: UISelection | null;
+  currUISelection?: UISelection | null;
 };
 
-const Button = ({ isActive, onClick, children, currUISelection }: ButtonProps) => {
+const Button = ({ isActive, onClick, children, currUISelection = null }: ButtonProps) => {
   return (
     <div
       onClick={onClick}
