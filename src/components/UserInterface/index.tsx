@@ -1,4 +1,4 @@
-import { MdAddRoad, MdEditRoad, MdOutlineTerrain } from 'react-icons/md';
+import { MdAddRoad, MdEditRoad, MdFlipCameraAndroid, MdOutlineTerrain } from 'react-icons/md';
 import { useMouseControls } from '../../hooks/controls';
 import { useInterfaceStore } from '../../utils/interfaceStore';
 import { UISelection } from '../../utils/interfaceUtils';
@@ -24,6 +24,10 @@ const UserInterface = () => {
     setCurrUISelection(currUISelection !== UISelection.SCULPT ? UISelection.SCULPT : null);
   };
 
+  const handleCameraClick = () => {
+    setCurrUISelection(null);
+  };
+
   return (
     <div className="fixed top-0 left-0 z-10 flex flex-col w-full">
       <div className="flex justify-start w-full p-4 bg-gray-800">
@@ -46,6 +50,10 @@ const UserInterface = () => {
             <MdEditRoad className="w-6 h-6" />
           </Button>
         )} */}
+
+        <Button isActive={currUISelection === null} onClick={handleCameraClick} currUISelection={currUISelection}>
+          <MdFlipCameraAndroid className="w-6 h-6" />
+        </Button>
 
         <Button
           isActive={currUISelection === UISelection.SCULPT}

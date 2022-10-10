@@ -3,7 +3,7 @@ import { useThree } from '@react-three/fiber';
 import { useInterfaceStore } from '../utils/interfaceStore';
 
 const Controls = () => {
-  const { blockMutated } = useInterfaceStore();
+  const { blockMutated, currUISelection } = useInterfaceStore();
   const { camera } = useThree();
 
   const angle = -15 * (Math.PI / 180);
@@ -11,7 +11,7 @@ const Controls = () => {
   return (
     <>
       <OrbitControls
-        enabled={blockMutated === null}
+        enabled={currUISelection === null}
         enablePan={false}
         minPolarAngle={Math.PI / 3}
         maxPolarAngle={Math.PI / 3}
