@@ -113,7 +113,9 @@ const getNeighbourVerticesForNeighboursInBlocks = (neighbours: (BlockType | null
 
 const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
   const [blockGeometries, setBlockGeometries] = useState<(BufferGeometry | null)[]>([]);
+  const [hoverGeometries, setHoverGeometries] = useState<(BufferGeometry | null)[]>([]);
   const [geometry, setGeometry] = useState<BufferGeometry | null>(null);
+
   const mesh = useRef<Mesh | null>(null);
   const { setBlockHovered, blockHovered } = useInterfaceStore();
   const { getBlock, setBlock, chunkRenderKeys } = useWorldStore();
@@ -124,6 +126,8 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
     ({ id, neighbours, vertices }: BlockType) => {
       const neighbourBlocks = neighbours.map((neighbour) => (neighbour > -1 ? getBlock(neighbour) : null));
       const neighbourVertices: boolean[] = getNeighbourVerticesForNeighboursInBlocks(neighbourBlocks);
+      let hoverGeometry = null;
+      let blockGeometry = null;
 
       const topTriangles = getTopTriangles(vertices, [
         neighbourVertices[25],
@@ -176,23 +180,36 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
           .concat(backTriangles)
           .concat(frontTriangles);
 
+        if (topTriangles.length > 0) {
+          hoverGeometry = geometryFromTriangles(topTriangles);
+
+          if (hoverGeometry) {
+            // TODO: does this need to be that long / every position?
+            const idArray = new Int32Array(
+              Array.from({ length: hoverGeometry.getAttribute('position').array.length / 3 }).map(() => id)
+            );
+
+            const idAttribute = new BufferAttribute(idArray, 1);
+            hoverGeometry.setAttribute('id', idAttribute);
+          }
+        }
+
         if (triangles.length > 0) {
-          const blockGeometry = geometryFromTriangles(triangles);
+          blockGeometry = geometryFromTriangles(triangles);
 
           if (blockGeometry) {
             // TODO: does this need to be that long / every position?
             const idArray = new Int32Array(
               Array.from({ length: blockGeometry.getAttribute('position').array.length / 3 }).map(() => id)
             );
+
             const idAttribute = new BufferAttribute(idArray, 1);
             blockGeometry.setAttribute('id', idAttribute);
-
-            return blockGeometry;
           }
         }
       }
 
-      return null;
+      return { hoverGeometry, blockGeometry };
     },
     [getBlock]
   );
@@ -238,7 +255,12 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
       }
       return null;
     });
-    setBlockGeometries(geometries);
+
+    const generatedBlockGeometries = geometries.map((geometry) => (geometry ? geometry.blockGeometry : null));
+    const generatedHoverGeometries = geometries.map((geometry) => (geometry ? geometry.hoverGeometry : null));
+
+    setBlockGeometries(generatedBlockGeometries);
+    setHoverGeometries(generatedHoverGeometries);
   }, [blocks, generateBlockGeometry, getBlock, renderKey]);
 
   useEffect(() => {
@@ -257,10 +279,6 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
       }
     }
   });
-
-  useEffect(() => {
-    console.log(geometry);
-  }, [geometry]);
 
   const handleIntersection = ({ face, object, point }: Intersection) => {
     const { geometry } = object as Mesh;
@@ -335,26 +353,14 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
           }
         }
 
-        const neighbourBlocks = block.neighbours.map((neighbour) => (neighbour > -1 ? getBlock(neighbour) : null));
-        const neighbourVertices: boolean[] = getNeighbourVerticesForNeighboursInBlocks(neighbourBlocks);
+        const geometry = hoverGeometries[block.index];
 
-        const topTriangles = getTopTriangles(block.vertices, [
-          neighbourVertices[25],
-          neighbourVertices[26],
-          neighbourVertices[27],
-          neighbourVertices[28],
-          neighbourVertices[29],
-        ]);
-
-        if (topTriangles) {
-          const geometry = geometryFromTriangles(topTriangles);
-          if (geometry) {
-            setBlockHovered({
-              block,
-              vertex: hoveredVertex,
-              geometry,
-            });
-          }
+        if (geometry) {
+          setBlockHovered({
+            block,
+            vertex: hoveredVertex,
+            geometry,
+          });
         }
       }
     }
