@@ -13,6 +13,7 @@ import { OrthographicCamera } from 'three';
 import { useControls } from 'leva';
 
 function Scene() {
+  console.log('tick');
   const { chunks, exportJSON } = useWorldStore();
 
   const camera = new OrthographicCamera();
@@ -38,7 +39,7 @@ function Scene() {
         <Chunk index={chunk.index} worldPosition={chunk.origin} blocks={chunk.blocks} key={`chunk-${chunk.index}}`} />
       ))}
 
-      <PostProcessing />
+      {/* <PostProcessing /> */}
     </Canvas>
   );
 }
