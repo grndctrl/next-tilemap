@@ -157,10 +157,8 @@ class Chunk {
     storeVertices: Store,
     storeNeighbours: Store
   ) {
-    console.log(this.blocks);
     for (let i = 0; i < this.blocks.length; i++) {
       const id = this.blocks[i];
-      console.log('🚀 ~ file: worldStore.ts ~ line 159 ~ id', id);
 
       storeLocalPosition.x[id] = data.localPosition.x[id];
       storeLocalPosition.y[id] = data.localPosition.y[id];
@@ -171,7 +169,7 @@ class Chunk {
       storeWorldPosition.z[id] = data.worldPosition.z[id];
 
       for (let j = 0; j < 14; j++) {
-        storeVertices[j][i] = data.vertices[j][i];
+        storeVertices[j][id] = data.vertices[j][id];
       }
 
       storeNeighbours.left[id] = data.neighbours.left[id];
@@ -384,8 +382,8 @@ class World {
 //
 
 const world = new World(totalChunksInWorld, totalBlocksInChunk);
-world.init();
-// world.initFromJSON(worldJSON);
+// world.init();
+world.initFromJSON(worldJSON);
 
 interface ChunkState {
   chunkRenderKeys: number[];
