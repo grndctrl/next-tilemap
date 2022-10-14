@@ -382,8 +382,8 @@ class World {
 //
 
 const world = new World(totalChunksInWorld, totalBlocksInChunk);
-// world.init();
-world.initFromJSON(worldJSON);
+world.init();
+// world.initFromJSON(worldJSON);
 
 interface ChunkState {
   chunkRenderKeys: number[];
