@@ -44,6 +44,11 @@
   "resolved" "https://registry.npmjs.org/@chevrotain/utils/-/utils-10.3.0.tgz"
   "version" "10.3.0"
 
+"@dimforge/rapier3d-compat@0.9.0":
+  "integrity" "sha512-zjgpXS/fFx1lZqjW1DfVUEaRHFpekzWjF6eSGb/xeEUf74YO0NDlQ93Hj0oI2k+i6QIoQk9KcIaEGwQZkullrw=="
+  "resolved" "https://registry.npmjs.org/@dimforge/rapier3d-compat/-/rapier3d-compat-0.9.0.tgz"
+  "version" "0.9.0"
+
 "@eslint/eslintrc@^1.3.2":
   "integrity" "sha512-AXYd23w1S/bv3fTs3Lz0vjiYemS08jWkI3hYyS9I1ry+0f+Yjs1wm+sU0BS8qDOPrBIkp4qHYC16I8uVtpLajQ=="
   "resolved" "https://registry.npmjs.org/@eslint/eslintrc/-/eslintrc-1.3.2.tgz"
@@ -390,7 +395,7 @@
     "utility-types" "^3.10.0"
     "zustand" "^3.5.13"
 
-"@react-three/fiber@^8.8.9", "@react-three/fiber@>=6.0", "@react-three/fiber@>=8.0":
+"@react-three/fiber@^8.0.12", "@react-three/fiber@^8.8.9", "@react-three/fiber@>=6.0", "@react-three/fiber@>=8.0":
   "integrity" "sha512-TGeDm6EieaQ/ckRPC0rbG0ntHjWO7xp7eLRh4ZFqQ5BzCqIO+mA3QXLzAuVItL1Y32OuBdXC28iqVHWOw2AWCw=="
   "resolved" "https://registry.npmjs.org/@react-three/fiber/-/fiber-8.8.9.tgz"
   "version" "8.8.9"
@@ -403,6 +408,15 @@
     "scheduler" "^0.21.0"
     "suspend-react" "^0.0.8"
     "zustand" "^3.7.1"
+
+"@react-three/rapier@^0.8.2":
+  "integrity" "sha512-q5Css5r3WgpMfH2YeEUWA02vpAWquAN6K57n5pJ9XysmZZ6f6zk/iiQdficl8Rv7JOGJ7GCbykMbXnp+tdyKnA=="
+  "resolved" "https://registry.npmjs.org/@react-three/rapier/-/rapier-0.8.2.tgz"
+  "version" "0.8.2"
+  dependencies:
+    "@dimforge/rapier3d-compat" "0.9.0"
+    "three-stdlib" "^2.15.0"
+    "use-asset" "^1.0.4"
 
 "@rushstack/eslint-patch@^1.1.3":
   "integrity" "sha512-sXo/qW2/pAcmT43VoRKOJbDOfV3cYpq3szSVfIThQXNt+E4DfKj361vaAt3c88U5tPUxzEswam7GW48PJqtKAg=="
@@ -2547,7 +2561,7 @@
   "resolved" "https://registry.npmjs.org/three-mesh-bvh/-/three-mesh-bvh-0.5.16.tgz"
   "version" "0.5.16"
 
-"three-stdlib@^2.17.1", "three-stdlib@^2.17.2":
+"three-stdlib@^2.15.0", "three-stdlib@^2.17.1", "three-stdlib@^2.17.2":
   "integrity" "sha512-7ZLCJJogtn1D1MlUi7q0iLUbrxj7K++YxjHIIz5AZ4wX4E137BgiiTmhH4XhAuvXGRk9ph3ZtoHTfJBXhqDX3w=="
   "resolved" "https://registry.npmjs.org/three-stdlib/-/three-stdlib-2.17.2.tgz"
   "version" "2.17.2"
@@ -2564,7 +2578,7 @@
     "potpack" "^1.0.1"
     "zstddec" "^0.0.2"
 
-"three@^0.145.0", "three@>= 0.123.0", "three@>=0.103.0", "three@>=0.122.0", "three@>=0.126", "three@>=0.133", "three@>=0.137":
+"three@^0.145.0", "three@>= 0.123.0", "three@>=0.103.0", "three@>=0.122.0", "three@>=0.126", "three@>=0.133", "three@>=0.137", "three@>=0.139.2":
   "integrity" "sha512-EKoHQEtEJ4CB6b2BGMBgLZrfwLjXcSUfoI/MiIXUuRpeYsfK5aPWbYhdtIVWOH+x6X0TouldHKHBuc/LAiFzAw=="
   "resolved" "https://registry.npmjs.org/three/-/three-0.145.0.tgz"
   "version" "0.145.0"
@@ -2669,6 +2683,13 @@
   "version" "4.4.1"
   dependencies:
     "punycode" "^2.1.0"
+
+"use-asset@^1.0.4":
+  "integrity" "sha512-7/hqDrWa0iMnCoET9W1T07EmD4Eg/Wmoj/X8TGBc++ECRK4m5yTsjP4O6s0yagbxfqIOuUkIxe2/sA+VR2GxZA=="
+  "resolved" "https://registry.npmjs.org/use-asset/-/use-asset-1.0.4.tgz"
+  "version" "1.0.4"
+  dependencies:
+    "fast-deep-equal" "^3.1.3"
 
 "use-sync-external-store@1.2.0":
   "integrity" "sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA=="
