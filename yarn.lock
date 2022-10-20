@@ -163,6 +163,11 @@
   dependencies:
     "@babel/runtime" "^7.13.10"
 
+"@radix-ui/react-icons@^1.0.3":
+  "integrity" "sha512-xc3wQC59rsFylVbSusQCrrM+6695ppF730Q6yqzhRdqDcRNWIm2R6ngpzBoSOQMcwnq4p805F+Gr7xo4fmtN1A=="
+  "resolved" "https://registry.npmjs.org/@radix-ui/react-icons/-/react-icons-1.1.1.tgz"
+  "version" "1.1.1"
+
 "@radix-ui/react-id@0.1.4":
   "integrity" "sha512-/hq5m/D0ZfJWOS7TLF+G0l08KDRs87LBE46JkAvgKkg1fW4jkucx9At9D9vauIPSbdNmww5kXEp566hMlA8eXA=="
   "resolved" "https://registry.npmjs.org/@radix-ui/react-id/-/react-id-0.1.4.tgz"
@@ -371,7 +376,7 @@
   "resolved" "https://registry.npmjs.org/@react-spring/types/-/types-9.5.5.tgz"
   "version" "9.5.5"
 
-"@react-three/drei@^9.34.3":
+"@react-three/drei@*", "@react-three/drei@^9.34.3":
   "integrity" "sha512-to6d0l1pELS7IJg64Grkk6nsPD2IFEEmcgRbnik/HxBGv6hbhrti23dA7I0UO6ndaQU2gaNAxqxagupaht5SiA=="
   "resolved" "https://registry.npmjs.org/@react-three/drei/-/drei-9.34.3.tgz"
   "version" "9.34.3"
@@ -395,7 +400,7 @@
     "utility-types" "^3.10.0"
     "zustand" "^3.5.13"
 
-"@react-three/fiber@^8.0.12", "@react-three/fiber@^8.8.9", "@react-three/fiber@>=6.0", "@react-three/fiber@>=8.0":
+"@react-three/fiber@*", "@react-three/fiber@^8.0.12", "@react-three/fiber@^8.8.9", "@react-three/fiber@>=6.0", "@react-three/fiber@>=8.0":
   "integrity" "sha512-TGeDm6EieaQ/ckRPC0rbG0ntHjWO7xp7eLRh4ZFqQ5BzCqIO+mA3QXLzAuVItL1Y32OuBdXC28iqVHWOw2AWCw=="
   "resolved" "https://registry.npmjs.org/@react-three/fiber/-/fiber-8.8.9.tgz"
   "version" "8.8.9"
@@ -423,7 +428,7 @@
   "resolved" "https://registry.npmjs.org/@rushstack/eslint-patch/-/eslint-patch-1.2.0.tgz"
   "version" "1.2.0"
 
-"@stitches/react@1.2.8":
+"@stitches/react@^1.2.6", "@stitches/react@1.2.8":
   "integrity" "sha512-9g9dWI4gsSVe8bNLlb+lMkBYsnIKCZTmvqvDG+Avnn69XfmHZKiaMrx7cgTaddq7aTPPmXiTsbFcUy0xgI4+wA=="
   "resolved" "https://registry.npmjs.org/@stitches/react/-/react-1.2.8.tgz"
   "version" "1.2.8"
@@ -2208,6 +2213,15 @@
   "resolved" "https://registry.npmjs.org/quick-lru/-/quick-lru-5.1.1.tgz"
   "version" "5.1.1"
 
+"r3f-perf@^6.5.0":
+  "integrity" "sha512-6hT9V5ihOOv2g/zyOpMGviiqxW9SKFX6AMfcAMnFz3S74M5WNjfAWx4D54Cd89O+5hrcj5Pa69/piGZEKmWPeg=="
+  "resolved" "https://registry.npmjs.org/r3f-perf/-/r3f-perf-6.5.0.tgz"
+  "version" "6.5.0"
+  dependencies:
+    "@radix-ui/react-icons" "^1.0.3"
+    "@stitches/react" "^1.2.6"
+    "zustand" "^3.7.1"
+
 "react-colorful@^5.5.1":
   "integrity" "sha512-1exovf0uGTGyq5mXQT0zgQ80uvj2PCwvF8zY1RN9/vbJVSjSo3fsB/4L3ObbF7u70NduSiK4xu4Y6q1MHoUGEw=="
   "resolved" "https://registry.npmjs.org/react-colorful/-/react-colorful-5.6.1.tgz"
@@ -2267,7 +2281,7 @@
   dependencies:
     "debounce" "^1.2.1"
 
-"react@*", "react@^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16 || ^17", "react@^16.8 || ^17.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^17.0.2 || ^18.0.0-0", "react@^18.0.0", "react@^18.2.0", "react@>= 16.3.0", "react@>= 16.8", "react@>= 16.8.0", "react@>= 16.8.0 || 17.x.x || ^18.0.0-0", "react@>=16.13", "react@>=16.8", "react@>=16.8.0", "react@>=17.0", "react@>=18.0", "react@18.2.0":
+"react@*", "react@^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0", "react@^16 || ^17", "react@^16.8 || ^17.0", "react@^16.8.0 || ^17.0.0 || ^18.0.0", "react@^16.x || ^17.x || ^18.x", "react@^17.0.2 || ^18.0.0-0", "react@^18.0.0", "react@^18.2.0", "react@>= 16.3.0", "react@>= 16.8", "react@>= 16.8.0", "react@>= 16.8.0 || 17.x.x || ^18.0.0-0", "react@>=16.13", "react@>=16.8", "react@>=16.8.0", "react@>=17.0", "react@>=18.0", "react@18.2.0":
   "integrity" "sha512-/3IjMdb2L9QbBdWiW5e3P2/npwMBaU9mHCSCUzNln0ZCYbcfTsGbTJrU/kGemdH2IWmB2ioZ+zkxtmq6g09fGQ=="
   "resolved" "https://registry.npmjs.org/react/-/react-18.2.0.tgz"
   "version" "18.2.0"
@@ -2561,7 +2575,7 @@
   "resolved" "https://registry.npmjs.org/three-mesh-bvh/-/three-mesh-bvh-0.5.16.tgz"
   "version" "0.5.16"
 
-"three-stdlib@^2.15.0", "three-stdlib@^2.17.1", "three-stdlib@^2.17.2":
+"three-stdlib@*", "three-stdlib@^2.15.0", "three-stdlib@^2.17.1", "three-stdlib@^2.17.2":
   "integrity" "sha512-7ZLCJJogtn1D1MlUi7q0iLUbrxj7K++YxjHIIz5AZ4wX4E137BgiiTmhH4XhAuvXGRk9ph3ZtoHTfJBXhqDX3w=="
   "resolved" "https://registry.npmjs.org/three-stdlib/-/three-stdlib-2.17.2.tgz"
   "version" "2.17.2"
@@ -2578,7 +2592,7 @@
     "potpack" "^1.0.1"
     "zstddec" "^0.0.2"
 
-"three@^0.145.0", "three@>= 0.123.0", "three@>=0.103.0", "three@>=0.122.0", "three@>=0.126", "three@>=0.133", "three@>=0.137", "three@>=0.139.2":
+"three@*", "three@^0.145.0", "three@>= 0.123.0", "three@>=0.103.0", "three@>=0.122.0", "three@>=0.126", "three@>=0.133", "three@>=0.137", "three@>=0.139.2":
   "integrity" "sha512-EKoHQEtEJ4CB6b2BGMBgLZrfwLjXcSUfoI/MiIXUuRpeYsfK5aPWbYhdtIVWOH+x6X0TouldHKHBuc/LAiFzAw=="
   "resolved" "https://registry.npmjs.org/three/-/three-0.145.0.tgz"
   "version" "0.145.0"

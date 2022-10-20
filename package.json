@@ -19,6 +19,7 @@
     "lodash": "^4.17.21",
     "next": "12.3.1",
     "postcss": "^8.4.17",
+    "r3f-perf": "^6.5.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-icons": "^4.4.0",
