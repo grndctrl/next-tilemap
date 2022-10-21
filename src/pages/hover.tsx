@@ -1,209 +1,37 @@
-import { Ray, World } from '@dimforge/rapier3d-compat';
-import { Box, Line, OrbitControls, PerspectiveCamera, Sphere, useKeyboardControls } from '@react-three/drei';
-import { Canvas, useFrame } from '@react-three/fiber';
-import {
-  CuboidCollider,
-  Debug,
-  interactionGroups,
-  MeshCollider,
-  Physics,
-  RigidBody,
-  RigidBodyApi,
-  useRapier,
-} from '@react-three/rapier';
+import { Box, OrbitControls } from '@react-three/drei';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { interactionGroups, Physics, RigidBody, RigidBodyApi } from '@react-three/rapier';
 import type { NextPage } from 'next';
-import { forwardRef, RefObject, Suspense, useImperativeHandle, useRef, useState } from 'react';
-import { Vector3 } from 'three';
-import Scene from '../components/Scene';
-import UserInterface from '../components/UserInterface';
-import { useControls } from 'leva';
-import { useKeyControls } from '../hooks/keyControls';
 import { Perf } from 'r3f-perf';
-import { Model } from '../models/Hovercar';
+import { RefObject } from 'react';
+import { Quaternion, Vector3 } from 'three';
 import Player from '../components/Player';
 
-type HoverEngineProps = {
-  position: Vector3;
-  body: RefObject<RigidBodyApi>;
-  world: World;
-  force: number;
-};
+export const useFollowingCamera = (target: RefObject<RigidBodyApi>) => {
+  const { camera, clock } = useThree();
+  const offset = new Vector3(0, 10, -40);
+  const lookAhead = new Vector3(0, 10, 40);
 
-type HoverEngineRef = {
-  ray: {
-    origin: Vector3;
-    dir: Vector3;
-  };
-  impact: Vector3;
-};
+  useFrame(() => {
+    if (!target.current) return null;
 
-const HoverEngine = forwardRef<HoverEngineRef, HoverEngineProps>(({ position, body, world: input, force }, ref) => {
-  const downVector = new Vector3(0, -1, 0);
-  const upVector = new Vector3(0, 1, 0);
-  const ray = new Ray(position, downVector);
-  const hoverHeight = 2;
-  const [impact, setImpact] = useState<Vector3>(new Vector3());
-  const [rayOrigin, setRayOrigin] = useState<Vector3>(new Vector3());
-  const [rayDirection, setRayDirection] = useState<Vector3>(new Vector3());
-  const rapier = useRapier();
+    const t = 0.1;
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      ray: {
-        origin: rayOrigin,
-        dir: rayDirection,
-      },
-      impact,
-    }),
-    [rayDirection, rayOrigin, impact]
-  );
+    const rotation = target.current.rotation();
+    const translation = target.current.translation();
 
-  useFrame(({ clock }) => {
-    if (!body.current) return null;
-    const translation = body.current.translation();
-    const rotation = body.current.rotation();
+    const forwardVector = new Vector3(0, 0, 1)
+      .applyQuaternion(rotation)
+      .projectOnPlane(new Vector3(0, 1, 0))
+      .normalize();
+    const correctedRotation = new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), forwardVector);
 
-    ray.origin = position.clone().applyQuaternion(rotation).add(translation);
-    ray.dir = downVector.clone().applyQuaternion(rotation);
-    setRayOrigin(position.clone().applyQuaternion(rotation).add(translation));
-    setRayDirection(downVector.clone().applyQuaternion(rotation));
+    const position = offset.clone().applyQuaternion(correctedRotation).add(translation);
+    const lookAt = lookAhead.clone().applyQuaternion(correctedRotation).add(translation);
 
-    // ray.dir = downVector.clone();
-    const world = rapier.world.raw();
-    const hit = world.castRay(ray, 1.0, true, undefined, interactionGroups(0, [1]));
-
-    if (hit) {
-      const point = ray.pointAt(hit.toi);
-      const _impact = new Vector3(point.x, point.y, point.z);
-      const diff = 1 - _impact.distanceTo(new Vector3(ray.origin.x, ray.origin.y, ray.origin.z));
-
-      const forceVector = upVector
-        .clone()
-        .applyQuaternion(rotation)
-        .normalize()
-        .multiplyScalar(diff * force);
-      body.current.applyImpulseAtPoint(forceVector, ray.origin);
-    }
+    camera.position.lerp(position, t);
+    camera.lookAt(lookAt);
   });
-
-  return (
-    <>
-      <Line visible={true} points={[position, position.clone().add(downVector)]} />
-    </>
-  );
-});
-
-HoverEngine.displayName = 'HoverEngine';
-
-const Hover = () => {
-  const { world: worldApi } = useRapier();
-  const body = useRef<RigidBodyApi>(null);
-  const velocity = useRef<Vector3>(new Vector3());
-  const acceleration = useRef<Vector3>(new Vector3());
-  const world = worldApi.raw();
-  const bodyRadius = 0.5;
-  const hoverHeight = 1;
-  const enginePositions = [new Vector3(-1, 0, 1), new Vector3(1, 0, 1), new Vector3(-1, 0, -1), new Vector3(1, 0, -1)];
-  const { hoverForce, damping, x, y, z, speed } = useControls({
-    hoverForce: {
-      value: 0.5,
-      min: 0,
-      max: 4,
-      step: 0.01,
-    },
-    damping: {
-      value: 2,
-      min: 0,
-      max: 100,
-    },
-    x: {
-      value: 0,
-      min: -2,
-      max: 2,
-    },
-    y: {
-      value: 0,
-      min: -2,
-      max: 2,
-    },
-    z: {
-      value: 0,
-      min: -2,
-      max: 2,
-    },
-    speed: {
-      value: 1,
-      min: 0,
-      max: 4,
-    },
-  });
-  const engineRefs = useRef<(HoverEngineRef | null)[]>([]);
-
-  const { forward, backward, left, right } = useKeyControls();
-
-  useFrame(({ clock }) => {
-    if (!body.current) return;
-
-    const translation = body.current.translation();
-    const rotation = body.current.rotation();
-
-    const forwardVector = new Vector3(0, 0, 1).applyQuaternion(rotation);
-
-    const drive = (Number(forward) - Number(backward)) * speed;
-    const steering = (Number(left) - Number(right)) * speed * 0.25;
-
-    body.current.applyImpulse(forwardVector.clone().multiplyScalar(drive));
-    body.current.applyTorqueImpulse(new Vector3(0, steering, 0));
-  });
-
-  return (
-    <>
-      {engineRefs.current.map((ref, index) => {
-        if (ref) {
-          return (
-            <group key={`ray-${index}`}>
-              <Sphere args={[0.1]} position={ref.impact} />
-              <Line points={[ref.ray.origin, ref.ray.origin.clone().add(ref.ray.dir)]} />;
-            </group>
-          );
-        }
-        return <group key={`ray-${index}`}></group>;
-      })}
-      <RigidBody
-        ref={body}
-        colliders={false}
-        // position={[x, y, z]}
-        // rotation={[x, 0, 0]}
-        // type={'kinematicPosition'}
-        position={[0, 4, 0]}
-        type={'dynamic'}
-        collisionGroups={interactionGroups(0, [1])}
-        angularDamping={damping}
-        linearDamping={damping}
-      >
-        <MeshCollider type={'hull'}>
-          <Box args={[1, 1, 2]}>
-            <meshNormalMaterial />
-          </Box>
-          {/* <Model /> */}
-        </MeshCollider>
-
-        {enginePositions.map((position, index) => {
-          return (
-            <HoverEngine
-              ref={(ref) => (engineRefs.current[index] = ref)}
-              key={index}
-              position={position}
-              body={body}
-              world={world}
-              force={hoverForce}
-            />
-          );
-        })}
-      </RigidBody>
-    </>
-  );
 };
 
 const Ground = () => {
@@ -228,6 +56,16 @@ const Ground = () => {
   );
 };
 
+const Crate = ({ position }: { position: Vector3 }) => {
+  return (
+    <RigidBody position={position} type="dynamic" colliders="cuboid" mass={1}>
+      <Box args={[4, 4, 4]} castShadow>
+        <meshStandardMaterial color={'#742'} />
+      </Box>
+    </RigidBody>
+  );
+};
+
 const Page: NextPage = () => {
   return (
     <div className="fixed w-full h-screen">
@@ -242,7 +80,7 @@ const Page: NextPage = () => {
         }}
       >
         <color args={['black']} attach={'background'} />
-        <OrbitControls minDistance={10} />
+        {/* <OrbitControls minDistance={10} /> */}
         <Perf position="bottom-right" />
         <directionalLight
           castShadow
@@ -257,11 +95,14 @@ const Page: NextPage = () => {
           shadow-camera-left={-100}
         />
         <ambientLight intensity={0.5} />
-        <Physics>
+        <Physics timeStep={'vary'}>
           {/* <Debug /> */}
-          {/* <Hover /> */}
           <Player />
           <Ground />
+
+          <Crate position={new Vector3(10, 3, 10)} />
+          <Crate position={new Vector3(-10, 4, 10)} />
+          <Crate position={new Vector3(-10, 5, -10)} />
         </Physics>
       </Canvas>
     </div>

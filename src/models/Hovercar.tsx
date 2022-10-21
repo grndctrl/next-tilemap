@@ -20,6 +20,7 @@ export function Model(props: JSX.IntrinsicElements['group']) {
   const { nodes, materials } = useGLTF('/hovercar.glb') as unknown as GLTFResult;
   return (
     <group {...props} dispose={null}>
+      <axesHelper position={[0, 2, 0]} />
       <mesh castShadow geometry={nodes.Cube.geometry}>
         <meshStandardMaterial color={'cyan'} />
       </mesh>
