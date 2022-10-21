@@ -1,6 +1,6 @@
 import { MdAddRoad, MdEditRoad, MdFlipCameraAndroid, MdOutlineTerrain } from 'react-icons/md';
 import { TbPackgeExport, TbPackgeImport } from 'react-icons/tb';
-import { useMouseControls } from '../../hooks/controls';
+import { useMouseControls } from '../../hooks/mouseControls';
 import { useInterfaceStore } from '../../utils/interfaceStore';
 import { UISelection } from '../../utils/interfaceUtils';
 import { useWorldStore } from '../../utils/worldStore';

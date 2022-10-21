@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useMouseControls } from '../../hooks/controls';
+import { useMouseControls } from '../../hooks/mouseControls';
 import { useInterfaceStore } from '../../utils/interfaceStore';
 import { UISelection } from '../../utils/interfaceUtils';
 import Mutator from '../Mutator';
