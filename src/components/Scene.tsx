@@ -1,4 +1,4 @@
-import { Box, OrbitControls } from '@react-three/drei';
+import { Box, OrbitControls, Sphere } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 
 import Lighting from './Lighting';
@@ -11,6 +11,7 @@ import Controls from './Controls';
 import { useEffect } from 'react';
 import { OrthographicCamera } from 'three';
 import { useControls } from 'leva';
+import { Physics, Debug, RigidBody } from '@react-three/rapier';
 
 function Scene() {
   console.log('tick');
@@ -35,10 +36,18 @@ function Scene() {
       <Controls />
       <SceneInterface />
 
-      {chunks.map((chunk) => (
-        <Chunk index={chunk.index} worldPosition={chunk.origin} blocks={chunk.blocks} key={`chunk-${chunk.index}}`} />
-      ))}
+      <Physics colliders={false}>
+        <RigidBody colliders="ball" position={[20, 40, -20]}>
+          <Sphere castShadow receiveShadow>
+            <meshPhysicalMaterial color="red" />
+          </Sphere>
+        </RigidBody>
 
+        <Debug />
+        {chunks.map((chunk) => (
+          <Chunk index={chunk.index} worldPosition={chunk.origin} blocks={chunk.blocks} key={`chunk-${chunk.index}}`} />
+        ))}
+      </Physics>
       {/* <PostProcessing /> */}
     </Canvas>
   );

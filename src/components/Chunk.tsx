@@ -1,4 +1,5 @@
 import { ThreeEvent, useFrame } from '@react-three/fiber';
+import { RigidBody } from '@react-three/rapier';
 import { remove } from 'lodash';
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { BufferAttribute, BufferGeometry, Intersection, Mesh, Object3D, Raycaster, Vector3 } from 'three';
@@ -373,11 +374,11 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
   return (
     <group position={worldPosition}>
       {geometry && (
-        <>
+        <RigidBody type="fixed" colliders="trimesh">
           <mesh ref={mesh} geometry={geometry} onPointerLeave={handlePointerLeave}>
             <meshStandardMaterial color="#2dd4bf" />
           </mesh>
-        </>
+        </RigidBody>
       )}
     </group>
   );
