@@ -1,30 +1,6 @@
 import { Vector3 } from 'three';
 import { ChunkType } from '../components/Chunk';
-
-const getMeasurements = () => {
-  const chunksInWorld = new Vector3(2, 2, 2);
-  const blocksInChunk = new Vector3(4, 4, 4);
-  const blockSize = new Vector3(10, 5, 10);
-
-  const blocksInWorld = chunksInWorld.clone().multiply(blocksInChunk);
-  const chunkSize = blocksInChunk.clone().multiply(blockSize);
-  const worldSize = blocksInWorld.clone().multiply(blockSize);
-  const totalBlocksInChunk = blocksInChunk.x * blocksInChunk.y * blocksInChunk.z;
-  const totalBlocksInWorld = blocksInWorld.x * blocksInWorld.y * blocksInWorld.z;
-  const totalChunksInWorld = chunksInWorld.x * chunksInWorld.y * chunksInWorld.z;
-
-  return {
-    blocksInChunk,
-    blocksInWorld,
-    blockSize,
-    chunksInWorld,
-    chunkSize,
-    totalBlocksInChunk,
-    totalBlocksInWorld,
-    totalChunksInWorld,
-    worldSize,
-  };
-};
+import { getMeasurements } from './worldUtils';
 
 //
 
@@ -186,6 +162,36 @@ const calcBlockIndexForPosition = (position: Vector3) => {
 
 //
 
+const calcArrayPositionFromWorldPosition = (position: Vector3) => {
+  const { blocksInWorld, blockSize } = getMeasurements();
+
+  const x = (blocksInWorld.x - 1) * 0.5;
+  const y = (blocksInWorld.y - 1) * 0.5;
+  const z = (blocksInWorld.z - 1) * 0.5;
+
+  const offset = new Vector3(x, y, z);
+
+  const arrayPosition = position.clone().divide(blockSize).add(offset);
+
+  return arrayPosition;
+};
+
+const calcWorldIndexFromWorldPosition = (position: Vector3) => {
+  const { blocksInWorld } = getMeasurements();
+
+  const arrayPosition = calcArrayPositionFromWorldPosition(position);
+
+  const x = arrayPosition.x;
+  const y = arrayPosition.y * blocksInWorld.x * blocksInWorld.z;
+  const z = arrayPosition.z * blocksInWorld.x;
+
+  const index = x + y + z;
+
+  return index;
+};
+
+//
+
 export {
   getMeasurements,
   calcChunkWorldPositionForIndex,
@@ -196,4 +202,5 @@ export {
   calcChunkArrayPositionForPosition,
   // calcBlockWorldPositionForIndexAndParentChunk,
   calcBlockIndexForPosition,
+  calcWorldIndexFromWorldPosition,
 };

@@ -5,15 +5,17 @@ import {
   calcChunkIndexForArrayPosition,
   calcChunkPositionForWorldPosition,
   calcChunkWorldPositionForIndex,
+  calcWorldIndexFromWorldPosition,
   getMeasurements,
 } from './chunkUtils';
 import { useCallback } from 'react';
 import { Vector3 } from 'three';
 import create from 'zustand';
-import { BlockType, calcNeighboursForWorldPosition } from './blockUtils';
+import { BlockType, calcNeighboursForWorldPosition, getVerticesForTableIndex } from './blockUtils';
 import createStore, { Schema, Store } from './typedArrayStore';
 import worldJSON from '../../public/world.json';
 import { isEqual } from 'lodash';
+import { calcTableIndicesFromHeightmap, generateHeightmap } from './worldUtils';
 
 const { worldSize, totalBlocksInChunk, totalBlocksInWorld, totalChunksInWorld } = getMeasurements();
 
@@ -111,21 +113,6 @@ class Chunk {
         storeVertices[j][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
       }
 
-      storeVertices[0][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-      storeVertices[1][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-      storeVertices[2][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-      storeVertices[3][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-      storeVertices[4][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-      storeVertices[5][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-      storeVertices[6][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-      storeVertices[7][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-      storeVertices[8][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-      storeVertices[9][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-      storeVertices[10][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-      storeVertices[11][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-      storeVertices[12][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-      storeVertices[13][id] = this.index < totalChunksInWorld / 2 ? 1 : 0;
-
       const neighbours = calcNeighboursForWorldPosition(worldPosition).map((neighbourPosition) => {
         if (isWorldPositionWithinBounds(neighbourPosition)) {
           const chunkOrigin = calcChunkPositionForWorldPosition(neighbourPosition);
@@ -178,6 +165,56 @@ class Chunk {
       storeNeighbours.front[id] = data.neighbours.front[id];
       storeNeighbours.bottom[id] = data.neighbours.bottom[id];
       storeNeighbours.top[id] = data.neighbours.top[id];
+    }
+  }
+
+  public initFromTableIndices(
+    tableIndices: number[],
+    storeLocalPosition: Store,
+    storeWorldPosition: Store,
+    storeVertices: Store,
+    storeNeighbours: Store
+  ) {
+    for (let i = 0; i < this.blocks.length; i++) {
+      const id = this.blocks[i];
+      const localPosition = calcBlockPositionForIndex(i);
+      const worldPosition = localPosition.clone().add(this.origin);
+
+      storeLocalPosition.x[id] = localPosition.x;
+      storeLocalPosition.y[id] = localPosition.y;
+      storeLocalPosition.z[id] = localPosition.z;
+
+      storeWorldPosition.x[id] = worldPosition.x;
+      storeWorldPosition.y[id] = worldPosition.y;
+      storeWorldPosition.z[id] = worldPosition.z;
+
+      const worldIndex = calcWorldIndexFromWorldPosition(worldPosition);
+      const vertices = getVerticesForTableIndex(tableIndices[worldIndex]);
+      for (let j = 0; j < 14; j++) {
+        storeVertices[j][id] = Number(vertices[j]);
+      }
+
+      const neighbours = calcNeighboursForWorldPosition(worldPosition).map((neighbourPosition) => {
+        if (isWorldPositionWithinBounds(neighbourPosition)) {
+          const chunkOrigin = calcChunkPositionForWorldPosition(neighbourPosition);
+          const chunkArrayPosition = calcChunkArrayPositionForPosition(chunkOrigin);
+          const blockPosition = neighbourPosition.clone().sub(chunkOrigin);
+          const chunkIndex = calcChunkIndexForArrayPosition(chunkArrayPosition);
+
+          const neighbourIndex = totalBlocksInChunk * chunkIndex + calcBlockIndexForPosition(blockPosition);
+
+          return neighbourIndex;
+        }
+
+        return -1;
+      });
+
+      storeNeighbours.left[id] = neighbours[0];
+      storeNeighbours.right[id] = neighbours[1];
+      storeNeighbours.back[id] = neighbours[2];
+      storeNeighbours.front[id] = neighbours[3];
+      storeNeighbours.bottom[id] = neighbours[4];
+      storeNeighbours.top[id] = neighbours[5];
     }
   }
 }
@@ -239,6 +276,20 @@ class World {
     });
 
     console.log(this);
+  }
+
+  public initFromHeightmap(heightmap: { height: number; tableIndex: number }[]) {
+    const tableIndices = calcTableIndicesFromHeightmap(heightmap);
+    console.log('🚀 ~ file: worldStore.ts ~ line 295 ~ tableIndices', tableIndices);
+
+    this.chunks = Array.from({ length: this.totalChunksInWorld }).map((_, index) => {
+      const origin = calcChunkWorldPositionForIndex(index);
+
+      const chunk = new Chunk(index, origin, this.totalBlocksInChunk);
+      chunk.initFromTableIndices(tableIndices, this.localPosition, this.worldPosition, this.vertices, this.neighbours);
+
+      return chunk;
+    });
   }
 
   //
@@ -382,8 +433,9 @@ class World {
 //
 
 const world = new World(totalChunksInWorld, totalBlocksInChunk);
-// world.init();
-world.initFromJSON(worldJSON);
+
+const heightmap = generateHeightmap();
+world.initFromHeightmap(heightmap);
 
 interface ChunkState {
   chunkRenderKeys: number[];

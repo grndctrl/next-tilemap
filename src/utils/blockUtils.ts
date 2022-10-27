@@ -1,5 +1,5 @@
 import { BufferAttribute, BufferGeometry, Vector3 } from 'three';
-import { getMeasurements } from './chunkUtils';
+import { getMeasurements } from './worldUtils';
 import { mergeBufferGeometries } from 'three-stdlib';
 import { useWorldStore } from './worldStore';
 

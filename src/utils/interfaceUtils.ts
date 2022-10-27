@@ -1,6 +1,6 @@
 import { Vector2, Vector3 } from 'three';
 import { BlockType } from './blockUtils';
-import { getMeasurements } from './chunkUtils';
+import { getMeasurements } from './worldUtils';
 
 enum BlockDirection {
   NORTH,

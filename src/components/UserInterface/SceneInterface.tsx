@@ -12,6 +12,7 @@ const SceneInterface = () => {
 
   useEffect(() => {
     if (leftButton) {
+      console.log('tick');
       if (currUISelection === UISelection.SCULPT) {
         if (blockHovered && blockMutated === null) {
           if (blockHovered.block.neighbours.length === 0) {

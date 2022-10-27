@@ -12,8 +12,9 @@ import {
   getSideTriangles,
   getTopTriangles,
 } from '../utils/blockUtils';
-import { getMeasurements } from '../utils/chunkUtils';
+import { getMeasurements } from '../utils/worldUtils';
 import { useInterfaceStore } from '../utils/interfaceStore';
+import { colors } from '../utils/tailwindDefaults';
 import { useWorldStore } from '../utils/worldStore';
 
 type ChunkProps = {
@@ -290,7 +291,7 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
       const block = getBlock(id);
 
       if (block) {
-        console.log('🚀 ~ file: Chunk.tsx ~ line 271 ~ calcTableIndex(block.vertices)', calcTableIndex(block.vertices));
+        // console.log('🚀 ~ file: Chunk.tsx ~ line 271 ~ calcTableIndex(block.vertices)', calcTableIndex(block.vertices));
         // const geometry = blockGeometries[block.index];
 
         point.sub(block.worldPosition);
@@ -376,7 +377,7 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
       {geometry && (
         <RigidBody type="fixed" colliders="trimesh">
           <mesh ref={mesh} geometry={geometry} onPointerLeave={handlePointerLeave}>
-            <meshStandardMaterial color="#2dd4bf" />
+            <meshStandardMaterial color={colors.violet[500]} />
           </mesh>
         </RigidBody>
       )}

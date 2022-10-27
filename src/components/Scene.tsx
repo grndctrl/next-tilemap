@@ -12,9 +12,9 @@ import { useEffect } from 'react';
 import { OrthographicCamera } from 'three';
 import { useControls } from 'leva';
 import { Physics, Debug, RigidBody } from '@react-three/rapier';
+import { colors } from '../utils/tailwindDefaults';
 
 function Scene() {
-  console.log('tick');
   const { chunks, exportJSON } = useWorldStore();
 
   const camera = new OrthographicCamera();
@@ -24,26 +24,13 @@ function Scene() {
   camera.near = 0.1;
   camera.far = 1000;
 
-  useEffect(() => {
-    exportJSON();
-  }, []);
-
   return (
     <Canvas gl={{ antialias: false }} dpr={2} camera={camera}>
-      <color attach="background" args={['#000']} />
-
       <Lighting />
       <Controls />
       <SceneInterface />
 
-      <Physics colliders={false}>
-        <RigidBody colliders="ball" position={[20, 40, -20]}>
-          <Sphere castShadow receiveShadow>
-            <meshPhysicalMaterial color="red" />
-          </Sphere>
-        </RigidBody>
-
-        <Debug />
+      <Physics colliders={false} paused={true}>
         {chunks.map((chunk) => (
           <Chunk index={chunk.index} worldPosition={chunk.origin} blocks={chunk.blocks} key={`chunk-${chunk.index}}`} />
         ))}

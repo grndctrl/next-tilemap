@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Vector3 } from 'three';
 import { BlockType, calcTableIndex, getVerticesForTableIndex } from '../utils/blockUtils';
 import { useWorldStore, GetBlock } from '../utils/worldStore';
-import { getMeasurements } from '../utils/chunkUtils';
+import { getMeasurements } from '../utils/worldUtils';
 
 const getBlockForAddition = (
   getBlock: GetBlock,

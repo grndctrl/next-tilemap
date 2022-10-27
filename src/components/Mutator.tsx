@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { BufferGeometry, Mesh, Raycaster, Vector3 } from 'three';
 import { useMutation } from '../hooks/mutation';
 import { useWorldStore } from '../utils/worldStore';
-import { getMeasurements } from '../utils/chunkUtils';
+import { getMeasurements } from '../utils/worldUtils';
 import { useInterfaceStore } from '../utils/interfaceStore';
 import { BlockType } from '../utils/blockUtils';
 
