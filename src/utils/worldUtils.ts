@@ -7,8 +7,8 @@ const prng = alea('seed');
 const noise2D = createNoise2D(prng);
 
 const getMeasurements = () => {
-  const chunksInWorld = new Vector3(8, 8, 8);
-  const blocksInChunk = new Vector3(4, 4, 4);
+  const chunksInWorld = new Vector3(4, 4, 4);
+  const blocksInChunk = new Vector3(8, 8, 8);
   const blockSize = new Vector3(10, 5, 10);
 
   const blocksInWorld = chunksInWorld.clone().multiply(blocksInChunk);

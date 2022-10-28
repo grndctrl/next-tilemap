@@ -257,7 +257,6 @@ class World {
   }
 
   public initFromJSON(data: any) {
-    console.log('🚀 ~ file: worldStore.ts ~ line 219 ~ data', data);
     if (
       this.totalBlocksInChunk !== data.totalBlocksInChunk ||
       this.totalChunksInWorld !== data.totalChunksInWorld ||
@@ -274,13 +273,10 @@ class World {
 
       return chunk;
     });
-
-    console.log(this);
   }
 
   public initFromHeightmap(heightmap: { height: number; tableIndex: number }[]) {
     const tableIndices = calcTableIndicesFromHeightmap(heightmap);
-    console.log('🚀 ~ file: worldStore.ts ~ line 295 ~ tableIndices', tableIndices);
 
     this.chunks = Array.from({ length: this.totalChunksInWorld }).map((_, index) => {
       const origin = calcChunkWorldPositionForIndex(index);

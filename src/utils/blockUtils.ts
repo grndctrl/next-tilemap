@@ -742,7 +742,7 @@ const geometryFromTriangles = (triangles: number[][]) => {
     [0, vertexPosition.y, 0],
   ];
 
-  const triangleGeometries = triangles.map((vertices) => {
+  const triangleGeometries: BufferGeometry[] = triangles.map((vertices) => {
     const position = new Float32Array(
       vertices
         .map((index) => {

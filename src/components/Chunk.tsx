@@ -1,7 +1,7 @@
 import { ThreeEvent, useFrame } from '@react-three/fiber';
 import { RigidBody } from '@react-three/rapier';
 import { remove } from 'lodash';
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { forwardRef, memo, RefObject, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { BufferAttribute, BufferGeometry, Intersection, Mesh, Object3D, Raycaster, Vector3 } from 'three';
 import { mergeBufferGeometries } from 'three-stdlib';
 import {
@@ -16,6 +16,7 @@ import { getMeasurements } from '../utils/worldUtils';
 import { useInterfaceStore } from '../utils/interfaceStore';
 import { colors } from '../utils/tailwindDefaults';
 import { useWorldStore } from '../utils/worldStore';
+import { Box } from '@react-three/drei';
 
 type ChunkProps = {
   index: number;
@@ -23,7 +24,7 @@ type ChunkProps = {
   blocks: number[];
 };
 
-export type ChunkType = {
+type ChunkType = {
   index: number;
   worldPosition: Vector3;
   blocks: number[];
@@ -113,16 +114,23 @@ const getNeighbourVerticesForNeighboursInBlocks = (neighbours: (BlockType | null
   return currentNeighbourVertices;
 };
 
-const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
-  const [blockGeometries, setBlockGeometries] = useState<(BufferGeometry | null)[]>([]);
-  const [hoverGeometries, setHoverGeometries] = useState<(BufferGeometry | null)[]>([]);
-  const [geometry, setGeometry] = useState<BufferGeometry | null>(null);
+export type ChunkRef = {
+  mesh: RefObject<Mesh>;
+};
 
-  const mesh = useRef<Mesh | null>(null);
+const Chunk = forwardRef<Mesh, ChunkProps>(({ index, worldPosition, blocks }, ref) => {
+  const [blockGeometries, setBlockGeometries] = useState<(BufferGeometry | null)[]>([]);
+
+  const [geometry, setGeometry] = useState<BufferGeometry | null>(null);
+  const mesh = useRef<Mesh>(null);
+
   const { setBlockHovered, blockHovered } = useInterfaceStore();
   const { getBlock, setBlock, chunkRenderKeys } = useWorldStore();
-  const { blockSize } = getMeasurements();
   const renderKey = chunkRenderKeys[index];
+
+  // useImperativeHandle(ref, () => ({
+  //   mesh,
+  // }));
 
   const generateBlockGeometry = useCallback(
     ({ id, neighbours, vertices }: BlockType) => {
@@ -259,114 +267,14 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
     });
 
     const generatedBlockGeometries = geometries.map((geometry) => (geometry ? geometry.blockGeometry : null));
-    const generatedHoverGeometries = geometries.map((geometry) => (geometry ? geometry.hoverGeometry : null));
 
     setBlockGeometries(generatedBlockGeometries);
-    setHoverGeometries(generatedHoverGeometries);
   }, [blocks, generateBlockGeometry, getBlock, renderKey]);
 
   useEffect(() => {
     const ChunkGeometry = generateChunkGeometry(blocks);
     setGeometry(ChunkGeometry);
   }, [blocks, generateChunkGeometry]);
-
-  const raycaster = new Raycaster();
-  useFrame(({ camera, mouse }) => {
-    if (mesh.current) {
-      raycaster.setFromCamera(mouse, camera);
-
-      const intersections = raycaster.intersectObject(mesh.current);
-      if (intersections.length > 0) {
-        handleIntersection(intersections[0]);
-      }
-    }
-  });
-
-  const handleIntersection = ({ face, object, point }: Intersection) => {
-    const { geometry } = object as Mesh;
-    const idBufferAttribute = geometry.getAttribute('id');
-
-    if (face) {
-      const id = idBufferAttribute.array[face.a];
-      const block = getBlock(id);
-
-      if (block) {
-        // console.log('🚀 ~ file: Chunk.tsx ~ line 271 ~ calcTableIndex(block.vertices)', calcTableIndex(block.vertices));
-        // const geometry = blockGeometries[block.index];
-
-        point.sub(block.worldPosition);
-
-        const vertices = blockVertexTable.slice(0, 8).map((position, index) => ({ index, position }));
-
-        remove(vertices, ({ index }) => !block.vertices[index]);
-        remove(vertices, ({ index }) => {
-          if (index < 4) {
-            return vertices.findIndex(({ index: _index }) => _index === index + 4) > -1;
-          }
-          return false;
-        });
-
-        vertices.sort((a, b) => point.distanceTo(a.position) - point.distanceTo(b.position));
-        const hoveredVertex = vertices[0];
-
-        const blockAbove = getBlock(block.worldPosition.clone().add(new Vector3(0, blockSize.y, 0)));
-
-        if (blockAbove?.isActive) {
-          // if there is a block above, skip current block
-          // however there are some exceptions where the current block is still visible as top level
-          let isSkipped = true;
-
-          if (calcTableIndex(blockAbove.vertices) === 6798) {
-            if (calcTableIndex(block.vertices) === 16367) {
-              isSkipped = false;
-            } else if (calcTableIndex(block.vertices) === 16383) {
-              if (hoveredVertex.index === 4 || hoveredVertex.index === 5 || hoveredVertex.index === 6) {
-                isSkipped = false;
-              }
-            }
-          } else if (calcTableIndex(blockAbove.vertices) === 6477) {
-            if (calcTableIndex(block.vertices) === 16351) {
-              isSkipped = false;
-            } else if (calcTableIndex(block.vertices) === 16383) {
-              if (hoveredVertex.index === 4 || hoveredVertex.index === 5 || hoveredVertex.index === 7) {
-                isSkipped = false;
-              }
-            }
-          } else if (calcTableIndex(blockAbove.vertices) === 5675) {
-            if (calcTableIndex(block.vertices) === 16319) {
-              isSkipped = false;
-            } else if (calcTableIndex(block.vertices) === 16383) {
-              if (hoveredVertex.index === 4 || hoveredVertex.index === 6 || hoveredVertex.index === 7) {
-                isSkipped = false;
-              }
-            }
-          } else if (calcTableIndex(blockAbove.vertices) === 5399) {
-            if (calcTableIndex(block.vertices) === 16255) {
-              isSkipped = false;
-            } else if (calcTableIndex(block.vertices) === 16383) {
-              if (hoveredVertex.index === 5 || hoveredVertex.index === 6 || hoveredVertex.index === 7) {
-                isSkipped = false;
-              }
-            }
-          }
-
-          if (isSkipped) {
-            return null;
-          }
-        }
-
-        const geometry = hoverGeometries[block.index];
-
-        if (geometry) {
-          setBlockHovered({
-            block,
-            vertex: hoveredVertex,
-            geometry,
-          });
-        }
-      }
-    }
-  };
 
   const handlePointerLeave = () => {
     setBlockHovered(null);
@@ -376,13 +284,15 @@ const Chunk = ({ index, worldPosition, blocks }: ChunkProps) => {
     <group position={worldPosition}>
       {geometry && (
         <RigidBody type="fixed" colliders="trimesh">
-          <mesh ref={mesh} geometry={geometry} onPointerLeave={handlePointerLeave}>
+          <mesh ref={ref} geometry={geometry}>
             <meshStandardMaterial color={colors.violet[500]} />
           </mesh>
         </RigidBody>
       )}
     </group>
   );
-};
+});
+
+Chunk.displayName = 'Chunk';
 
 export default memo(Chunk);
