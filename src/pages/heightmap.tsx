@@ -60,7 +60,7 @@ const Tile = ({ x, y, height, tableIndex }: TileProps) => {
         className="fixed z-20 px-4 py-2 rounded-full opacity-0 pointer-events-none top-10 left-10 bg-slate-300 text-slate-800"
         style={hoverStyles}
       >
-        {tableIndex}
+        {tableIndex} - {x}:{y}
       </animated.div>
     </>
   );

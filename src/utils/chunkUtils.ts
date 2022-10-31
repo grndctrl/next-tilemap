@@ -203,4 +203,5 @@ export {
   // calcBlockWorldPositionForIndexAndParentChunk,
   calcBlockIndexForPosition,
   calcWorldIndexFromWorldPosition,
+  calcArrayPositionFromWorldPosition,
 };

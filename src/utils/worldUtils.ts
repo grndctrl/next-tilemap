@@ -32,7 +32,7 @@ const getMeasurements = () => {
 };
 
 // TODO: this return object makes no sense
-const getNeighbours = (position: Vector2, heightmap: number[]): (null | -1 | 0 | 1)[] => {
+const getNeighbours = (position: Vector2, heightmap: number[]): boolean[] => {
   const { blocksInWorld } = getMeasurements();
 
   const index = position.x + position.y * blocksInWorld.x;
@@ -47,57 +47,48 @@ const getNeighbours = (position: Vector2, heightmap: number[]): (null | -1 | 0 |
 
   const neighbours = positions.map(({ x, y }) => {
     if (x < 0 || x > blocksInWorld.x - 1 || y < 0 || y > blocksInWorld.z - 1) {
-      return null;
+      return true;
     }
 
     const neighbourIndex = x + y * blocksInWorld.x;
     const neighbourHeight = heightmap[neighbourIndex];
 
     if (neighbourHeight < height) {
-      return -1;
+      return false;
     }
 
-    if (neighbourHeight > height) {
-      return 1;
-    }
-
-    return 0;
+    return true;
   });
 
   return neighbours;
 };
 
-const getTableIndex = (neighbours: (null | -1 | 0 | 1)[]) => {
-  neighbours = neighbours.map((neighbour) => (neighbour === null ? 0 : neighbour));
-
-  if (neighbours[0] === null || neighbours[1] === null || neighbours[2] === null || neighbours[3] === null)
-    return 16383;
-
+const getTableIndex = (neighbours: boolean[]) => {
   // ramps
-  if (neighbours[0] === -1 && neighbours[1] > -1 && neighbours[2] > -1 && neighbours[3] > -1) return 7855;
+  if (!neighbours[0] && neighbours[1] && neighbours[2] && neighbours[3]) return 7855;
 
-  if (neighbours[0] === -1 && neighbours[1] > -1 && neighbours[2] === -1 && neighbours[3] === -1) return 7855;
+  if (!neighbours[0] && neighbours[1] && !neighbours[2] && !neighbours[3]) return 7855;
 
-  if (neighbours[0] > -1 && neighbours[1] === -1 && neighbours[2] > -1 && neighbours[3] > -1) return 7519;
+  if (neighbours[0] && !neighbours[1] && neighbours[2] && neighbours[3]) return 7519;
 
-  if (neighbours[0] > -1 && neighbours[1] === -1 && neighbours[2] === -1 && neighbours[3] === -1) return 7519;
+  if (neighbours[0] && !neighbours[1] && !neighbours[2] && !neighbours[3]) return 7519;
 
-  if (neighbours[0] > -1 && neighbours[1] > -1 && neighbours[2] === -1 && neighbours[3] > -1) return 7119;
+  if (neighbours[0] && neighbours[1] && !neighbours[2] && neighbours[3]) return 7119;
 
-  if (neighbours[0] === -1 && neighbours[1] === -1 && neighbours[2] === -1 && neighbours[3] > -1) return 7119;
+  if (!neighbours[0] && !neighbours[1] && !neighbours[2] && neighbours[3]) return 7119;
 
-  if (neighbours[0] > -1 && neighbours[1] > -1 && neighbours[2] > -1 && neighbours[3] === -1) return 5951;
+  if (neighbours[0] && neighbours[1] && neighbours[2] && !neighbours[3]) return 5951;
 
-  if (neighbours[0] === -1 && neighbours[1] === -1 && neighbours[2] > -1 && neighbours[3] === -1) return 5951;
+  if (!neighbours[0] && !neighbours[1] && neighbours[2] && !neighbours[3]) return 5951;
 
   // corners
-  if (neighbours[0] === -1 && neighbours[1] > -1 && neighbours[2] === -1 && neighbours[3] > -1) return 6798;
+  if (!neighbours[0] && neighbours[1] && !neighbours[2] && neighbours[3]) return 6798;
 
-  if (neighbours[0] > -1 && neighbours[1] === -1 && neighbours[2] === -1 && neighbours[3] > -1) return 6477;
+  if (neighbours[0] && !neighbours[1] && !neighbours[2] && neighbours[3]) return 6477;
 
-  if (neighbours[0] === -1 && neighbours[1] > -1 && neighbours[2] > -1 && neighbours[3] === -1) return 5675;
+  if (!neighbours[0] && neighbours[1] && neighbours[2] && !neighbours[3]) return 5675;
 
-  if (neighbours[0] > -1 && neighbours[1] === -1 && neighbours[2] > -1 && neighbours[3] === -1) return 5399;
+  if (neighbours[0] && !neighbours[1] && neighbours[2] && !neighbours[3]) return 5399;
 
   return 16383;
 };
@@ -168,37 +159,43 @@ const generateHeightmap = () => {
     for (let x = 0; x < blocksInWorld.x; x++) {
       const index = x + y * blocksInWorld.x;
 
-      const scale = 0.05;
+      const scale = 0.075;
       const noise = (noise2D(x * scale, y * scale) + 1.0) * 0.5;
 
       heightmap[index] = Math.floor(blocksInWorld.y * noise * 0.25 + Math.ceil(blocksInWorld.y * 0.125));
     }
   }
 
-  // first iteration, find ramps and corners
-  const position = new Vector2();
-  for (let y = 0; y < blocksInWorld.z; y++) {
-    for (let x = 0; x < blocksInWorld.x; x++) {
-      const index = x + y * blocksInWorld.x;
+  // TODO: Do these iterations on chunk level.
+  // // first iteration, find ramps and corners
+  // const position = new Vector2();
+  // for (let y = 0; y < blocksInWorld.z; y++) {
+  //   for (let x = 0; x < blocksInWorld.x; x++) {
+  //     const index = x + y * blocksInWorld.x;
 
-      position.set(x, y);
-      const neighbours = getNeighbours(position, heightmap);
+  //     position.set(x, y);
+  //     const neighbours = getNeighbours(position, heightmap);
 
-      tableIndices[index] = getTableIndex(neighbours);
-    }
-  }
+  //     tableIndices[index] = getTableIndex(neighbours);
+  //   }
+  // }
 
-  // second iteration to smooth skipped corners
-  for (let y = 0; y < blocksInWorld.z; y++) {
-    for (let x = 0; x < blocksInWorld.x; x++) {
-      const index = x + y * blocksInWorld.x;
+  // // second iteration to smooth skipped corners
+  // for (let y = 0; y < blocksInWorld.z; y++) {
+  //   for (let x = 0; x < blocksInWorld.x; x++) {
+  //     const index = x + y * blocksInWorld.x;
 
-      position.set(x, y);
-      const neighbours = getNeighboursTableIndex(position, tableIndices);
-
-      tableIndices[index] = modifyTableIndex(tableIndices[index], neighbours);
-    }
-  }
+  //     position.set(x, y);
+  //     const neighbours = getNeighboursTableIndex(position, tableIndices);
+  //     if (x === 10 && y === 20) {
+  //       console.log(tableIndices[index]);
+  //     }
+  //     tableIndices[index] = modifyTableIndex(tableIndices[index], neighbours);
+  //     if (x === 10 && y === 20) {
+  //       console.log(tableIndices[index]);
+  //     }
+  //   }
+  // }
 
   for (let y = 0; y < blocksInWorld.z; y++) {
     for (let x = 0; x < blocksInWorld.x; x++) {

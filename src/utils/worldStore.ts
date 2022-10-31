@@ -220,21 +220,27 @@ class Chunk {
 }
 
 class World {
-  private localPosition: Store;
-  private worldPosition: Store;
-  private vertices: Store;
-  private neighbours: Store;
+  private localPosition: Store = {};
+  private worldPosition: Store = {};
+  private vertices: Store = {};
+  private neighbours: Store = {};
   private totalBlocksInWorld: number;
   private totalChunksInWorld: number;
   private totalBlocksInChunk: number;
 
   public chunks: Chunk[];
 
-  public constructor(totalChunksInWorld: number, totalBlocksInChunk: number) {
+  public constructor() {
     this.totalChunksInWorld = totalChunksInWorld;
     this.totalBlocksInChunk = totalBlocksInChunk;
     this.totalBlocksInWorld = totalChunksInWorld * totalBlocksInChunk;
 
+    this.chunks = [];
+  }
+
+  //
+
+  public init(totalChunksInWorld: number, totalBlocksInChunk: number) {
     this.localPosition = createStore(localPositionSchema, this.totalBlocksInWorld);
     this.worldPosition = createStore(worldPositionSchema, this.totalBlocksInWorld);
     this.vertices = createStore(verticesSchema, this.totalBlocksInWorld);
@@ -245,7 +251,7 @@ class World {
 
   //
 
-  public init() {
+  public generate() {
     this.chunks = Array.from({ length: this.totalChunksInWorld }).map((_, index) => {
       const origin = calcChunkWorldPositionForIndex(index);
 
@@ -256,7 +262,7 @@ class World {
     });
   }
 
-  public initFromJSON(data: any) {
+  public generateFromJSON(data: any) {
     if (
       this.totalBlocksInChunk !== data.totalBlocksInChunk ||
       this.totalChunksInWorld !== data.totalChunksInWorld ||
@@ -275,7 +281,7 @@ class World {
     });
   }
 
-  public initFromHeightmap(heightmap: { height: number; tableIndex: number }[]) {
+  public generateFromHeightmap(heightmap: { height: number; tableIndex: number }[]) {
     const tableIndices = calcTableIndicesFromHeightmap(heightmap);
 
     this.chunks = Array.from({ length: this.totalChunksInWorld }).map((_, index) => {
@@ -428,10 +434,10 @@ class World {
 
 //
 
-const world = new World(totalChunksInWorld, totalBlocksInChunk);
-
+const world = new World();
+world.init(totalChunksInWorld, totalBlocksInChunk);
 const heightmap = generateHeightmap();
-world.initFromHeightmap(heightmap);
+world.generateFromHeightmap(heightmap);
 
 interface ChunkState {
   chunkRenderKeys: number[];
@@ -463,7 +469,13 @@ const useChunkState = create<ChunkState>()((set, get) => ({
 
 const useWorldStore = () => {
   const chunks = world.chunks;
+  const { totalChunksInWorld, totalBlocksInChunk } = getMeasurements();
   const { chunkRenderKeys, updateRenderKey } = useChunkState();
+
+  const generateWorld = useCallback(() => {
+    world.init(totalChunksInWorld, totalBlocksInChunk);
+    world.generate();
+  }, []);
 
   const getBlock = useCallback((query: number | Vector3) => world.getBlock(query), []);
 
@@ -508,7 +520,7 @@ const useWorldStore = () => {
     return world.exportJSON();
   }, []);
 
-  return { chunks, getBlock, setBlock, setBlocks, chunkRenderKeys, updateRenderKey, exportJSON };
+  return { generateWorld, chunks, getBlock, setBlock, setBlocks, chunkRenderKeys, updateRenderKey, exportJSON };
 };
 
 export { useWorldStore };

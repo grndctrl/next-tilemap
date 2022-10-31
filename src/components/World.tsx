@@ -4,6 +4,7 @@ import { remove } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
 import { BufferGeometry, Intersection, Mesh, Raycaster, Vector3 } from 'three';
 import { blockVertexTable, calcTableIndex, geometryFromTriangles, getTopTriangles } from '../utils/blockUtils';
+import { calcArrayPositionFromWorldPosition, calcWorldIndexFromWorldPosition } from '../utils/chunkUtils';
 import { useInterfaceStore } from '../utils/interfaceStore';
 import { useWorldStore } from '../utils/worldStore';
 import { getMeasurements } from '../utils/worldUtils';
@@ -27,7 +28,9 @@ const World = () => {
     if (!block) return;
 
     if (id !== blockHovered?.block.id) {
-      console.log(calcTableIndex(block.vertices));
+      // console.log(calcTableIndex(block.vertices));
+      const p = calcArrayPositionFromWorldPosition(block.worldPosition);
+      console.log(calcTableIndex(block.vertices), p.x, p.z);
     }
 
     point.sub(block.worldPosition);
