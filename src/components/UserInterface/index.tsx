@@ -3,12 +3,12 @@ import { TbPackgeExport, TbPackgeImport } from 'react-icons/tb';
 import { useMouseControls } from '../../hooks/mouseControls';
 import { useInterfaceStore } from '../../utils/interfaceStore';
 import { UISelection } from '../../utils/interfaceUtils';
-import { useWorldStore } from '../../utils/worldStore';
+import { useWorld } from 'core/World';
 import { Button } from './Button';
 // import EditRoad from './EditRoad';
 
 const UserInterface = () => {
-  const { updateRenderKey } = useWorldStore();
+  const { updateRenderKey } = useWorld();
   const { currUISelection, setCurrUISelection } = useInterfaceStore();
 
   const controls = useMouseControls();

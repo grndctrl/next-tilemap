@@ -2,10 +2,10 @@ import type { NextPage } from 'next';
 import { ChangeEvent, useRef, useState } from 'react';
 import Scene from '../components/Scene';
 import UserInterface from '../components/UserInterface';
-import { useWorldStore } from '../utils/worldStore';
+import { useWorld } from 'core/World';
 
 const Home: NextPage = () => {
-  const { generateWorld } = useWorldStore();
+  // const { generateWorld } = useWorld();
   const [seed, setSeed] = useState<string>(Math.random().toString().slice(2, 10));
   const [size, setSize] = useState<string>(Math.random().toString());
 
@@ -19,7 +19,7 @@ const Home: NextPage = () => {
 
   const handleClick = () => {
     console.log(seed, size);
-    generateWorld();
+    // generateWorld();
   };
 
   return (

@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef, useState } from 'react';
 import { BufferGeometry, Mesh, Raycaster, Vector3 } from 'three';
 import { useMutation } from '../hooks/mutation';
-import { useWorldStore } from '../utils/worldStore';
+import { useWorld } from 'core/World';
 import { blockSize } from '../utils/constants';
 import { useInterfaceStore } from '../utils/interfaceStore';
 import { BlockType } from '../utils/blockUtils';
@@ -19,7 +19,7 @@ type MutatorProps = {
 
 const Mutator = ({ block, vertex }: MutatorProps) => {
   const { setBlockHovered } = useInterfaceStore();
-  const { setBlocks } = useWorldStore();
+  const { setBlocks } = useWorld();
   const sphereRef = useRef<Mesh | null>(null);
   const [mutation, setMutation] = useState<'add' | 'remove' | 'reset'>('reset');
   const [initialY, setInitialY] = useState<number | null>(null);

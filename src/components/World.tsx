@@ -6,12 +6,12 @@ import { BufferGeometry, Intersection, Mesh, Raycaster, Vector3 } from 'three';
 import { blockVertexTable, calcTableIndex, geometryFromTriangles, getTopTriangles } from '../utils/blockUtils';
 import { calcArrayPositionFromWorldPosition, calcWorldIndexFromWorldPosition } from '../utils/chunkUtils';
 import { useInterfaceStore } from '../utils/interfaceStore';
-import { useWorldStore } from '../utils/worldStore';
+import { useWorld } from 'core/World';
 import { blockSize } from '../utils/constants';
 import Chunk, { ChunkRef } from './Chunk';
 
 const World = () => {
-  const { chunks, getBlock, measurements } = useWorldStore();
+  const { chunks, getBlock, measurements } = useWorld();
   const chunkRefs = useRef<(Mesh | null)[]>(Array.from({ length: chunks.length }).map(() => null));
   const raycaster = new Raycaster();
   const { setBlockHovered, blockHovered } = useInterfaceStore();

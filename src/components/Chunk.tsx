@@ -14,7 +14,7 @@ import {
 } from '../utils/blockUtils';
 import { useInterfaceStore } from '../utils/interfaceStore';
 import { colors } from '../utils/tailwindDefaults';
-import { useWorldStore } from '../utils/worldStore';
+import { useWorld } from 'core/World';
 
 type ChunkProps = {
   index: number;
@@ -122,8 +122,8 @@ const Chunk = forwardRef<Mesh, ChunkProps>(({ index, worldPosition, blocks }, re
   const [geometry, setGeometry] = useState<BufferGeometry | null>(null);
   const mesh = useRef<Mesh>(null);
 
-  const { setBlockHovered, blockHovered } = useInterfaceStore();
-  const { getBlock, setBlock, chunkRenderKeys } = useWorldStore();
+  const { setBlockHovered } = useInterfaceStore();
+  const { getBlock, chunkRenderKeys } = useWorld();
   const renderKey = chunkRenderKeys[index];
 
   // useImperativeHandle(ref, () => ({

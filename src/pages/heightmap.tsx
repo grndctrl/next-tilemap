@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { animated, useSpring } from 'react-spring';
 import { createNoise2D } from 'simplex-noise';
 import { Vector3 } from 'three';
-import { useWorldStore } from '../utils/worldStore';
+import { useWorld } from 'core/World';
 import { generateHeightmap } from '../utils/worldUtils';
 
 const prng = alea('seed');
@@ -61,7 +61,7 @@ const Tile = ({ x, y, height, tableIndex, blocksInWorld }: TileProps) => {
 };
 
 const Page: NextPage = () => {
-  const { measurements } = useWorldStore();
+  const { measurements } = useWorld();
   const [tiles, setTiles] = useState<{ height: number; tableIndex: number }[]>([]);
 
   const { blocksInWorld } = measurements;

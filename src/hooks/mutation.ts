@@ -2,8 +2,21 @@ import { uniq } from 'lodash';
 import { useEffect, useState } from 'react';
 import { Vector3 } from 'three';
 import { BlockType, calcTableIndex, getVerticesForTableIndex } from '../utils/blockUtils';
-import { useWorldStore, GetBlock } from '../utils/worldStore';
 import { blockSize } from '../utils/constants';
+import { useWorld } from 'core/World';
+
+interface GetBlock {
+  (query: number | Vector3): {
+    id: number;
+    index: number;
+    parentChunk: number;
+    isActive: boolean;
+    localPosition: Vector3;
+    worldPosition: Vector3;
+    neighbours: number[];
+    vertices: boolean[];
+  } | null;
+}
 
 const getBlockForAddition = (
   getBlock: GetBlock,
@@ -376,7 +389,7 @@ const calcRemovalTableIndex = (vertex: number, fromTableIndex: number) => {
 //
 
 const useMutation = (vertex: number, block: BlockType) => {
-  const { getBlock } = useWorldStore();
+  const { getBlock } = useWorld();
   const [addition, setAdditon] = useState<BlockType[]>([]);
   const [removal, setRemoval] = useState<BlockType[]>([]);
   const [reset, setReset] = useState<BlockType[]>([]);
