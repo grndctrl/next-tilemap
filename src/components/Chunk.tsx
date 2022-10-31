@@ -12,11 +12,9 @@ import {
   getSideTriangles,
   getTopTriangles,
 } from '../utils/blockUtils';
-import { getMeasurements } from '../utils/worldUtils';
 import { useInterfaceStore } from '../utils/interfaceStore';
 import { colors } from '../utils/tailwindDefaults';
 import { useWorldStore } from '../utils/worldStore';
-import { Box } from '@react-three/drei';
 
 type ChunkProps = {
   index: number;
@@ -269,6 +267,7 @@ const Chunk = forwardRef<Mesh, ChunkProps>(({ index, worldPosition, blocks }, re
     const generatedBlockGeometries = geometries.map((geometry) => (geometry ? geometry.blockGeometry : null));
 
     setBlockGeometries(generatedBlockGeometries);
+    console.log('🚀 ~ Chunk:', index, renderKey);
   }, [blocks, generateBlockGeometry, getBlock, renderKey]);
 
   useEffect(() => {

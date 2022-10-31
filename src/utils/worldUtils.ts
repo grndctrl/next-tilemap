@@ -31,10 +31,29 @@ const getMeasurements = () => {
   };
 };
 
-// TODO: this return object makes no sense
-const getNeighbours = (position: Vector2, heightmap: number[]): boolean[] => {
-  const { blocksInWorld } = getMeasurements();
+//
 
+const isWorldPositionWithinBounds = (worldPosition: Vector3, worldSize: Vector3): boolean => {
+  const minWorld = worldSize.clone().multiplyScalar(-0.5);
+  const maxWorld = worldSize.clone().multiplyScalar(0.5);
+
+  if (worldPosition.x < minWorld.x || worldPosition.x > maxWorld.x) {
+    return false;
+  }
+  if (worldPosition.y < minWorld.y || worldPosition.y > maxWorld.y) {
+    return false;
+  }
+  if (worldPosition.z < minWorld.z || worldPosition.z > maxWorld.z) {
+    return false;
+  }
+
+  return true;
+};
+
+//
+
+// TODO: this return object makes no sense
+const getNeighbours = (position: Vector2, heightmap: number[], blocksInWorld: Vector3): boolean[] => {
   const index = position.x + position.y * blocksInWorld.x;
   const height = heightmap[index];
 
@@ -124,9 +143,7 @@ const modifyTableIndex = (tableIndex: number, neighbours: number[]) => {
   return tableIndex;
 };
 
-const getNeighboursTableIndex = (position: Vector2, tableIndices: number[]) => {
-  const { blocksInWorld } = getMeasurements();
-
+const getNeighboursTableIndex = (position: Vector2, tableIndices: number[], blocksInWorld: Vector3) => {
   const index = position.x + position.y * blocksInWorld.x;
 
   const positions = [
@@ -148,9 +165,7 @@ const getNeighboursTableIndex = (position: Vector2, tableIndices: number[]) => {
   return neighbours;
 };
 
-const generateHeightmap = () => {
-  const { blocksInWorld } = getMeasurements();
-
+const generateHeightmap = (blocksInWorld: Vector3) => {
   const heightmap = Array.from({ length: blocksInWorld.x * blocksInWorld.z }).map(() => 0);
   const tableIndices = Array.from({ length: blocksInWorld.x * blocksInWorld.z }).map(() => 0);
   const blocks = Array.from({ length: blocksInWorld.x * blocksInWorld.z }).map(() => ({ height: 0, tableIndex: 0 }));
@@ -209,9 +224,11 @@ const generateHeightmap = () => {
   return blocks;
 };
 
-const calcTableIndicesFromHeightmap = (heightmap: { height: number; tableIndex: number }[]) => {
-  const { blocksInWorld, totalBlocksInWorld } = getMeasurements();
-
+const calcTableIndicesFromHeightmap = (
+  heightmap: { height: number; tableIndex: number }[],
+  blocksInWorld: Vector3,
+  totalBlocksInWorld: number
+) => {
   const tableIndices = Array.from({ length: totalBlocksInWorld }).map(() => 0);
 
   for (let z = 0; z < blocksInWorld.z; z++) {
@@ -232,4 +249,4 @@ const calcTableIndicesFromHeightmap = (heightmap: { height: number; tableIndex: 
   return tableIndices;
 };
 
-export { getMeasurements, generateHeightmap, calcTableIndicesFromHeightmap };
+export { generateHeightmap, calcTableIndicesFromHeightmap, isWorldPositionWithinBounds };

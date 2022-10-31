@@ -7,14 +7,13 @@ import { blockVertexTable, calcTableIndex, geometryFromTriangles, getTopTriangle
 import { calcArrayPositionFromWorldPosition, calcWorldIndexFromWorldPosition } from '../utils/chunkUtils';
 import { useInterfaceStore } from '../utils/interfaceStore';
 import { useWorldStore } from '../utils/worldStore';
-import { getMeasurements } from '../utils/worldUtils';
+import { blockSize } from '../utils/constants';
 import Chunk, { ChunkRef } from './Chunk';
 
 const World = () => {
-  const { chunks, exportJSON, getBlock } = useWorldStore();
+  const { chunks, getBlock, measurements } = useWorldStore();
   const chunkRefs = useRef<(Mesh | null)[]>(Array.from({ length: chunks.length }).map(() => null));
   const raycaster = new Raycaster();
-  const { blockSize, chunksInWorld, blocksInWorld } = getMeasurements();
   const { setBlockHovered, blockHovered } = useInterfaceStore();
 
   const handleIntersection = ({ face, object, point }: Intersection) => {
@@ -28,9 +27,7 @@ const World = () => {
     if (!block) return;
 
     if (id !== blockHovered?.block.id) {
-      // console.log(calcTableIndex(block.vertices));
-      const p = calcArrayPositionFromWorldPosition(block.worldPosition);
-      console.log(calcTableIndex(block.vertices), p.x, p.z);
+      const p = calcArrayPositionFromWorldPosition(block.worldPosition, measurements.blocksInWorld);
     }
 
     point.sub(block.worldPosition);
@@ -129,6 +126,10 @@ const World = () => {
       setBlockHovered(null);
     }
   });
+
+  useEffect(() => {
+    console.log('🚀 ~ file: World.tsx ~ line 134 ~ chunks', chunks);
+  }, []);
 
   return (
     <Physics colliders={false} paused={true}>

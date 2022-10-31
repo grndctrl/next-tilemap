@@ -8,7 +8,7 @@ import { Button } from './Button';
 // import EditRoad from './EditRoad';
 
 const UserInterface = () => {
-  const { exportJSON, updateRenderKey } = useWorldStore();
+  const { updateRenderKey } = useWorldStore();
   const { currUISelection, setCurrUISelection } = useInterfaceStore();
 
   const controls = useMouseControls();
@@ -30,7 +30,7 @@ const UserInterface = () => {
   };
 
   const handleExportClick = async () => {
-    const json = exportJSON();
+    const json = ''; //exportJSON();
 
     const blob = new Blob([json], { type: 'application/json' });
     const href = await URL.createObjectURL(blob);

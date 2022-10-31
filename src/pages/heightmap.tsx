@@ -1,17 +1,11 @@
-import type { NextPage } from 'next';
-import Scene from '../components/Scene';
-import UserInterface from '../components/UserInterface';
-import { getMeasurements } from '../utils/worldUtils';
-import { useWorldStore } from '../utils/worldStore';
-import { SimplexNoise } from 'three-stdlib';
-import seedrandom from 'seedrandom';
-import { useEffect, useRef } from 'react';
-import { createNoise2D } from 'simplex-noise';
 import alea from 'alea';
-import { useState } from 'react';
-import { Vector2 } from 'three';
-import { useSpring, animated } from 'react-spring';
-import { generateHeightmap, generateTilemap } from '../utils/worldUtils';
+import type { NextPage } from 'next';
+import { useEffect, useState } from 'react';
+import { animated, useSpring } from 'react-spring';
+import { createNoise2D } from 'simplex-noise';
+import { Vector3 } from 'three';
+import { useWorldStore } from '../utils/worldStore';
+import { generateHeightmap } from '../utils/worldUtils';
 
 const prng = alea('seed');
 const noise2D = createNoise2D(prng);
@@ -21,10 +15,10 @@ type TileProps = {
   y: number;
   height: number;
   tableIndex: number;
+  blocksInWorld: Vector3;
 };
 
-const Tile = ({ x, y, height, tableIndex }: TileProps) => {
-  const { blocksInWorld } = getMeasurements();
+const Tile = ({ x, y, height, tableIndex, blocksInWorld }: TileProps) => {
   const [hover, setHover] = useState(false);
 
   const w = 32;
@@ -67,9 +61,10 @@ const Tile = ({ x, y, height, tableIndex }: TileProps) => {
 };
 
 const Page: NextPage = () => {
-  const { blocksInWorld } = getMeasurements();
+  const { measurements } = useWorldStore();
   const [tiles, setTiles] = useState<{ height: number; tableIndex: number }[]>([]);
 
+  const { blocksInWorld } = measurements;
   useEffect(() => {
     const tiles = generateHeightmap();
 

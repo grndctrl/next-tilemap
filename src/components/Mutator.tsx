@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { BufferGeometry, Mesh, Raycaster, Vector3 } from 'three';
 import { useMutation } from '../hooks/mutation';
 import { useWorldStore } from '../utils/worldStore';
-import { getMeasurements } from '../utils/worldUtils';
+import { blockSize } from '../utils/constants';
 import { useInterfaceStore } from '../utils/interfaceStore';
 import { BlockType } from '../utils/blockUtils';
 
@@ -19,16 +19,15 @@ type MutatorProps = {
 
 const Mutator = ({ block, vertex }: MutatorProps) => {
   const { setBlockHovered } = useInterfaceStore();
-  const { blockSize } = getMeasurements();
   const { setBlocks } = useWorldStore();
   const sphereRef = useRef<Mesh | null>(null);
   const [mutation, setMutation] = useState<'add' | 'remove' | 'reset'>('reset');
   const [initialY, setInitialY] = useState<number | null>(null);
   const { addition, removal, reset } = useMutation(vertex.index, block);
 
-  useEffect(() => {
-    console.log('🚀 ~ file: Mutator.tsx ~ line 28 ~ addition, removal, reset', addition, removal, reset);
-  }, [addition, removal, reset]);
+  // useEffect(() => {
+  //   console.log('🚀 ~ file: Mutator.tsx ~ line 28 ~ addition, removal, reset', addition, removal, reset);
+  // }, [addition, removal, reset]);
 
   useFrame(({ mouse }) => {
     if (initialY === null) {

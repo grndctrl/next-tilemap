@@ -1,6 +1,6 @@
 import { Vector2, Vector3 } from 'three';
 import { BlockType } from './blockUtils';
-import { getMeasurements } from './worldUtils';
+import { blockSize } from './constants';
 
 enum BlockDirection {
   NORTH,
@@ -23,8 +23,6 @@ const getHoveredVertex = (
   block: BlockType,
   uv: Vector2
 ): { index: number; position: Vector3; worldPosition: Vector3 } | null => {
-  const { blockSize } = getMeasurements();
-
   const vertexPosition = new Vector2(uv.x > 0.5 ? 0.5 : -0.5, uv.y > 0.5 ? -0.5 : 0.5);
 
   let index =

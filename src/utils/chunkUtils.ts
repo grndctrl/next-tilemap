@@ -1,12 +1,9 @@
 import { Vector3 } from 'three';
-import { ChunkType } from '../components/Chunk';
-import { getMeasurements } from './worldUtils';
+import { blockSize, blocksInChunk, chunkSize, totalBlocksInChunk } from './constants';
 
 //
 
-const calcChunkArrayPositionForIndex = (index: number): Vector3 => {
-  const { chunksInWorld } = getMeasurements();
-
+const calcChunkArrayPositionForIndex = (index: number, chunksInWorld: Vector3): Vector3 => {
   const x = index % chunksInWorld.x;
   const y = Math.floor(index / (chunksInWorld.x * chunksInWorld.z));
   const z = Math.floor(index / chunksInWorld.x) % chunksInWorld.z;
@@ -18,9 +15,8 @@ const calcChunkArrayPositionForIndex = (index: number): Vector3 => {
 
 //
 
-const calcChunkWorldPositionForIndex = (index: number): Vector3 => {
-  const { chunksInWorld, chunkSize } = getMeasurements();
-  const arrayPosition = calcChunkArrayPositionForIndex(index);
+const calcChunkWorldPositionForIndex = (index: number, chunksInWorld: Vector3): Vector3 => {
+  const arrayPosition = calcChunkArrayPositionForIndex(index, chunksInWorld);
 
   const x = (chunksInWorld.x - 1) * 0.5;
   const y = (chunksInWorld.y - 1) * 0.5;
@@ -34,7 +30,6 @@ const calcChunkWorldPositionForIndex = (index: number): Vector3 => {
 //
 
 const calcBlockArrayPositionForIndex = (index: number): Vector3 => {
-  const { blocksInChunk } = getMeasurements();
   const x = index % blocksInChunk.x;
   const y = Math.floor(index / (blocksInChunk.x * blocksInChunk.z));
   const z = Math.floor(index / blocksInChunk.x) % blocksInChunk.z;
@@ -47,7 +42,6 @@ const calcBlockArrayPositionForIndex = (index: number): Vector3 => {
 //
 
 const calcBlockPositionForIndex = (index: number): Vector3 => {
-  const { blocksInChunk, blockSize } = getMeasurements();
   const arrayPosition = calcBlockArrayPositionForIndex(index);
 
   const x = (blocksInChunk.x - 1) * 0.5;
@@ -62,10 +56,7 @@ const calcBlockPositionForIndex = (index: number): Vector3 => {
 
 //
 
-const calcChunkPositionForWorldPosition = (position: Vector3): Vector3 => {
-  const { chunkSize, chunksInWorld } = getMeasurements();
-
-  // const chunkOffset = chunkSize.clone().divideScalar(2);
+const calcChunkPositionForWorldPosition = (position: Vector3, chunksInWorld: Vector3): Vector3 => {
   const worldOffset = chunksInWorld.clone().divideScalar(2);
   const chunkPosition = position
     .clone()
@@ -82,8 +73,6 @@ const calcChunkPositionForWorldPosition = (position: Vector3): Vector3 => {
 //
 
 const calcBlockArrayPositionForPosition = (position: Vector3): Vector3 => {
-  const { blocksInChunk, blockSize } = getMeasurements();
-
   const x = (blocksInChunk.x - 1) * 0.5;
   const y = (blocksInChunk.y - 1) * 0.5;
   const z = (blocksInChunk.z - 1) * 0.5;
@@ -97,9 +86,7 @@ const calcBlockArrayPositionForPosition = (position: Vector3): Vector3 => {
 
 //
 
-const calcChunkArrayPositionForPosition = (position: Vector3): Vector3 => {
-  const { chunksInWorld, chunkSize } = getMeasurements();
-
+const calcChunkArrayPositionForPosition = (position: Vector3, chunksInWorld: Vector3): Vector3 => {
   const x = (chunksInWorld.x - 1) * 0.5;
   const y = (chunksInWorld.y - 1) * 0.5;
   const z = (chunksInWorld.z - 1) * 0.5;
@@ -114,8 +101,6 @@ const calcChunkArrayPositionForPosition = (position: Vector3): Vector3 => {
 //
 
 const calcBlockIndexForArrayPosition = (arrayPosition: Vector3) => {
-  const { blocksInChunk } = getMeasurements();
-
   const x = arrayPosition.x;
   const y = arrayPosition.y * blocksInChunk.x * blocksInChunk.z;
   const z = arrayPosition.z * blocksInChunk.x;
@@ -127,9 +112,7 @@ const calcBlockIndexForArrayPosition = (arrayPosition: Vector3) => {
 
 //
 
-const calcChunkIndexForArrayPosition = (arrayPosition: Vector3) => {
-  const { chunksInWorld } = getMeasurements();
-
+const calcChunkIndexForArrayPosition = (arrayPosition: Vector3, chunksInWorld: Vector3) => {
   const x = arrayPosition.x;
   const y = arrayPosition.y * chunksInWorld.x * chunksInWorld.z;
   const z = arrayPosition.z * chunksInWorld.x;
@@ -162,9 +145,7 @@ const calcBlockIndexForPosition = (position: Vector3) => {
 
 //
 
-const calcArrayPositionFromWorldPosition = (position: Vector3) => {
-  const { blocksInWorld, blockSize } = getMeasurements();
-
+const calcArrayPositionFromWorldPosition = (position: Vector3, blocksInWorld: Vector3) => {
   const x = (blocksInWorld.x - 1) * 0.5;
   const y = (blocksInWorld.y - 1) * 0.5;
   const z = (blocksInWorld.z - 1) * 0.5;
@@ -176,10 +157,8 @@ const calcArrayPositionFromWorldPosition = (position: Vector3) => {
   return arrayPosition;
 };
 
-const calcWorldIndexFromWorldPosition = (position: Vector3) => {
-  const { blocksInWorld } = getMeasurements();
-
-  const arrayPosition = calcArrayPositionFromWorldPosition(position);
+const calcWorldIndexFromWorldPosition = (position: Vector3, blocksInWorld: Vector3) => {
+  const arrayPosition = calcArrayPositionFromWorldPosition(position, blocksInWorld);
 
   const x = arrayPosition.x;
   const y = arrayPosition.y * blocksInWorld.x * blocksInWorld.z;
@@ -193,7 +172,6 @@ const calcWorldIndexFromWorldPosition = (position: Vector3) => {
 //
 
 export {
-  getMeasurements,
   calcChunkWorldPositionForIndex,
   calcBlockPositionForIndex,
   calcChunkPositionForWorldPosition,

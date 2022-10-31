@@ -1,7 +1,6 @@
 import { BufferAttribute, BufferGeometry, Vector3 } from 'three';
-import { getMeasurements } from './worldUtils';
 import { mergeBufferGeometries } from 'three-stdlib';
-import { useWorldStore } from './worldStore';
+import { blockSize } from './constants';
 
 export type BlockType = {
   id: number;
@@ -15,22 +14,22 @@ export type BlockType = {
 };
 
 const blockVertexTable = [
-  new Vector3(-1, -1, -1).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
-  new Vector3(1, -1, -1).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
-  new Vector3(-1, -1, 1).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
-  new Vector3(1, -1, 1).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
+  new Vector3(-1, -1, -1).multiply(blockSize).multiplyScalar(0.5),
+  new Vector3(1, -1, -1).multiply(blockSize).multiplyScalar(0.5),
+  new Vector3(-1, -1, 1).multiply(blockSize).multiplyScalar(0.5),
+  new Vector3(1, -1, 1).multiply(blockSize).multiplyScalar(0.5),
 
-  new Vector3(-1, 1, -1).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
-  new Vector3(1, 1, -1).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
-  new Vector3(-1, 1, 1).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
-  new Vector3(1, 1, 1).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
+  new Vector3(-1, 1, -1).multiply(blockSize).multiplyScalar(0.5),
+  new Vector3(1, 1, -1).multiply(blockSize).multiplyScalar(0.5),
+  new Vector3(-1, 1, 1).multiply(blockSize).multiplyScalar(0.5),
+  new Vector3(1, 1, 1).multiply(blockSize).multiplyScalar(0.5),
 
-  new Vector3(-1, 0, 0).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
-  new Vector3(1, 0, 0).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
-  new Vector3(0, 0, -1).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
-  new Vector3(0, 0, 1).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
-  new Vector3(0, -1, 0).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
-  new Vector3(0, 1, 0).multiply(getMeasurements().blockSize).multiplyScalar(0.5),
+  new Vector3(-1, 0, 0).multiply(blockSize).multiplyScalar(0.5),
+  new Vector3(1, 0, 0).multiply(blockSize).multiplyScalar(0.5),
+  new Vector3(0, 0, -1).multiply(blockSize).multiplyScalar(0.5),
+  new Vector3(0, 0, 1).multiply(blockSize).multiplyScalar(0.5),
+  new Vector3(0, -1, 0).multiply(blockSize).multiplyScalar(0.5),
+  new Vector3(0, 1, 0).multiply(blockSize).multiplyScalar(0.5),
 ];
 
 const blockTriangleTable = [
@@ -249,9 +248,7 @@ const calcTableIndex = (vertices: boolean[]): number => {
 
 //
 
-const calcNeighboursForWorldPosition = (worldPosition: Vector3) => {
-  const { worldSize, blockSize, chunksInWorld, blocksInChunk } = getMeasurements();
-
+const calcNeighboursForWorldPosition = (worldPosition: Vector3, worldSize: Vector3) => {
   const minWorldSize = worldSize.clone().divideScalar(-2);
   const maxWorldSize = worldSize.clone().divideScalar(2);
 
@@ -720,7 +717,6 @@ const getNeighbourVerticesForNeighboursInBlocks = (neighbours: (BlockType | null
 };
 
 const geometryFromTriangles = (triangles: number[][]) => {
-  const { blockSize } = getMeasurements();
   const vertexPosition = blockSize.clone().multiplyScalar(0.5);
 
   const vertexTable = [

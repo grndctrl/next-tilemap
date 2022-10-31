@@ -3,15 +3,13 @@ import { useEffect, useState } from 'react';
 import { Vector3 } from 'three';
 import { BlockType, calcTableIndex, getVerticesForTableIndex } from '../utils/blockUtils';
 import { useWorldStore, GetBlock } from '../utils/worldStore';
-import { getMeasurements } from '../utils/worldUtils';
+import { blockSize } from '../utils/constants';
 
 const getBlockForAddition = (
   getBlock: GetBlock,
   vertex: number,
   worldPosition: Vector3
 ): { block: BlockType; vertex: number } | null => {
-  const { blockSize } = getMeasurements();
-
   const block = getBlock(worldPosition);
   if (block) {
     if (block.vertices[vertex + 4]) {
@@ -32,8 +30,6 @@ const getBlockForAddition = (
 };
 
 const getBlocksForAddition = (getBlock: GetBlock, vertex: number, block: BlockType) => {
-  console.log('tick');
-  const { blockSize } = getMeasurements();
   const blocks: ({ block: BlockType; vertex: number } | null)[] = [];
 
   switch (vertex) {
@@ -190,7 +186,6 @@ const calcAdditionTableIndex = (vertex: number, fromTableIndex: number) => {
       break;
   }
 
-  console.log('could not find correct table index', vertex, fromTableIndex);
   return 0;
 };
 
@@ -201,8 +196,6 @@ const getBlockForRemoval = (
   vertex: number,
   worldPosition: Vector3
 ): { block: BlockType; vertex: number } | null => {
-  const { blockSize } = getMeasurements();
-
   const blockAbove = getBlock(worldPosition.clone().add(new Vector3(0, blockSize.y, 0)));
 
   if (blockAbove) {
@@ -221,7 +214,6 @@ const getBlockForRemoval = (
 };
 
 const getBlocksForRemoval = (getBlock: GetBlock, vertex: number, block: BlockType) => {
-  const { blockSize } = getMeasurements();
   const blocks: ({ block: BlockType; vertex: number } | null)[] = [];
 
   switch (vertex) {
@@ -275,7 +267,6 @@ const getBlocksForRemoval = (getBlock: GetBlock, vertex: number, block: BlockTyp
 };
 
 const calcRemovalTableIndex = (vertex: number, fromTableIndex: number) => {
-  console.log(vertex, fromTableIndex);
   switch (vertex) {
     case 4:
       switch (fromTableIndex) {
@@ -353,7 +344,6 @@ const calcRemovalTableIndex = (vertex: number, fromTableIndex: number) => {
       }
       break;
     case 7:
-      console.log('case 7', vertex, fromTableIndex);
       switch (fromTableIndex) {
         //corner
         case 6798:
@@ -387,7 +377,6 @@ const calcRemovalTableIndex = (vertex: number, fromTableIndex: number) => {
 
 const useMutation = (vertex: number, block: BlockType) => {
   const { getBlock } = useWorldStore();
-  const { blockSize } = getMeasurements();
   const [addition, setAdditon] = useState<BlockType[]>([]);
   const [removal, setRemoval] = useState<BlockType[]>([]);
   const [reset, setReset] = useState<BlockType[]>([]);
@@ -395,7 +384,6 @@ const useMutation = (vertex: number, block: BlockType) => {
   // 1. get blocks for addition
   // 1.1 if vertex is 0 - 3, blocks are current level (vertex 0 - 3) and below (vertex 4 - 7)
   useEffect(() => {
-    console.log('calc mutation');
     let blocksForAddition: ({
       block: BlockType;
       vertex: number;
@@ -404,7 +392,6 @@ const useMutation = (vertex: number, block: BlockType) => {
     if (vertex < 4) {
       blocksForAddition = getBlocksForAddition(getBlock, vertex, block);
     } else {
-      console.log('🚀 ~ file: mutation.ts ~ line 408 ~ block.worldPosition', block.worldPosition);
       const positionAbove = block.worldPosition.clone().add(new Vector3(0, blockSize.y, 0));
 
       const blockAbove = getBlock(positionAbove);
@@ -459,10 +446,6 @@ const useMutation = (vertex: number, block: BlockType) => {
 
         currentBlocks.push(addition.block);
         additionBlocks.push(additionBlock);
-
-        if (addition.block.neighbours.length === 0) {
-          console.log('🚀 ~ file: mutation.ts ~ line 453 ~ addition.block', addition.block);
-        }
 
         const oneBlockBelow = getBlock(additionBlock.worldPosition.clone().add(new Vector3(0, -blockSize.y, 0)));
         const twoBlocksBelow = getBlock(additionBlock.worldPosition.clone().add(new Vector3(0, -2 * blockSize.y, 0)));

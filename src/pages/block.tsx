@@ -27,6 +27,7 @@ import { useEffect, useState } from 'react';
 import { useSpring, animated } from 'react-spring';
 import { colors } from '../utils/tailwindDefaults';
 import { useControls, Leva } from 'leva';
+import { blockSize } from '../utils/constants';
 
 const levaTheme = {
   elevation1: colors.slate[200],
@@ -211,7 +212,7 @@ const Block = () => {
   const [neighbourVertices, setNeighbourVertices] = useState<boolean[]>(Array.from({ length: 30 }).map(() => false));
   const [vertices, setVertices] = useState<boolean[]>(Array.from({ length: 14 }).map(() => true));
   const [geometry, setGeometry] = useState<BufferGeometry | null>(null);
-  const { blockSize } = getMeasurements();
+
   const styles = useSpring({
     background: geometry ? colors.slate[200] : colors.rose[500],
     color: geometry ? colors.slate[600] : colors.rose[900],
