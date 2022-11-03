@@ -1,23 +1,17 @@
-import { UISelection } from '../../utils/interfaceUtils';
-
 type ButtonProps = {
-  children: React.ReactNode;
-  isActive: boolean;
   onClick: () => void;
-  currUISelection?: UISelection | null;
+  label: string;
 };
 
-const Button = ({ isActive, onClick, children, currUISelection = null }: ButtonProps) => {
+const Button = ({ onClick, label }: ButtonProps) => {
   return (
-    <div
+    <button
       onClick={onClick}
-      className={`flex items-center justify-center w-10 h-10 mx-2 font-bold  text-zinc-100 ${
-        isActive ? 'bg-emerald-400' : 'bg-zinc-500'
-      } hover:bg-orange-500`}
+      className="p-2 text-yellow-800 uppercase bg-yellow-500 border-b-2 border-yellow-700 hover:bg-slate-200 hover:border-slate-400 hover:text-slate-900"
     >
-      {children}
-    </div>
+      {label}
+    </button>
   );
 };
 
-export { Button };
+export default Button;

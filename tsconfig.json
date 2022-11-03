@@ -17,7 +17,8 @@
     "baseUrl": "src",
     "paths": {
       "utils/*": ["utils/*"],
-      "core/*": ["core/*"]
+      "core/*": ["core/*"],
+      "components/*": ["components/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/utils/worldStore.bak"],

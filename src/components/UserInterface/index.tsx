@@ -4,7 +4,7 @@ import { useMouseControls } from '../../hooks/mouseControls';
 import { useInterfaceStore } from '../../utils/interfaceStore';
 import { UISelection } from '../../utils/interfaceUtils';
 import { useWorld } from 'core/World';
-import { Button } from './Button';
+import { Button } from './ToggleButton';
 // import EditRoad from './EditRoad';
 
 const UserInterface = () => {

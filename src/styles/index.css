@@ -2,10 +2,4 @@
 @tailwind components;
 @tailwind utilities;
 
-input[type='range']::-webkit-slider-thumb {
-  @apply bg-black;
-}
-
-input[type='range']::-range-thumb {
-  @apply bg-black;
-}
+@import 'ui.css';

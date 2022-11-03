@@ -3,9 +3,6 @@ import { createNoise2D } from 'simplex-noise';
 import { Vector2, Vector3 } from 'three';
 import { calcBlockIndexForArrayPosition } from '../utils/chunkUtils';
 
-const prng = alea('seed');
-const noise2D = createNoise2D(prng);
-
 const getMeasurements = () => {
   const chunksInWorld = new Vector3(4, 4, 4);
   const blocksInChunk = new Vector3(8, 8, 8);
@@ -165,17 +162,22 @@ const getNeighboursTableIndex = (position: Vector2, tableIndices: number[], bloc
   return neighbours;
 };
 
-const generateHeightmap = (blocksInWorld: Vector3) => {
+//
+
+//
+
+const generateHeightmap = (blocksInWorld: Vector3, seed: string = 'seed', resolution: number = 0.075) => {
   const heightmap = Array.from({ length: blocksInWorld.x * blocksInWorld.z }).map(() => 0);
   const tableIndices = Array.from({ length: blocksInWorld.x * blocksInWorld.z }).map(() => 0);
   const blocks = Array.from({ length: blocksInWorld.x * blocksInWorld.z }).map(() => ({ height: 0, tableIndex: 0 }));
 
+  const prng = alea(seed);
+  const noise2D = createNoise2D(prng);
+
   for (let y = 0; y < blocksInWorld.z; y++) {
     for (let x = 0; x < blocksInWorld.x; x++) {
       const index = x + y * blocksInWorld.x;
-
-      const scale = 0.075;
-      const noise = (noise2D(x * scale, y * scale) + 1.0) * 0.5;
+      const noise = (noise2D(x * resolution, y * resolution) + 1.0) * 0.5;
 
       heightmap[index] = Math.floor(blocksInWorld.y * noise * 0.25 + Math.ceil(blocksInWorld.y * 0.125));
     }
@@ -224,29 +226,121 @@ const generateHeightmap = (blocksInWorld: Vector3) => {
   return blocks;
 };
 
-const calcTableIndicesFromHeightmap = (
-  heightmap: { height: number; tableIndex: number }[],
-  blocksInWorld: Vector3,
-  totalBlocksInWorld: number
-) => {
+const calcTableIndicesFromHeightmap = (heightmap: { height: number; tableIndex: number }[], blocksInWorld: Vector3) => {
+  const totalBlocksInWorld = blocksInWorld.x * blocksInWorld.y * blocksInWorld.z;
   const tableIndices = Array.from({ length: totalBlocksInWorld }).map(() => 0);
 
   for (let z = 0; z < blocksInWorld.z; z++) {
     for (let x = 0; x < blocksInWorld.x; x++) {
       const { height, tableIndex } = heightmap[x + z * blocksInWorld.x];
 
-      for (let y = 0; y < height - 1; y++) {
+      for (let y = 0; y < height; y++) {
         const index = x + z * blocksInWorld.x + y * blocksInWorld.x * blocksInWorld.z;
-
         tableIndices[index] = 16383;
       }
-
-      const index = x + z * blocksInWorld.x + (height - 1) * blocksInWorld.x * blocksInWorld.z;
-      tableIndices[index] = tableIndex;
     }
   }
 
+  console.log('🚀 ~ file: worldUtils.ts ~ line 246 ~ tableIndices', tableIndices);
   return tableIndices;
 };
 
-export { generateHeightmap, calcTableIndicesFromHeightmap, isWorldPositionWithinBounds };
+const getTableIndexForNeighbours = (neighbours: boolean[]) => {
+  // ramps
+  if (!neighbours[0] && neighbours[1] && neighbours[2] && neighbours[3]) return 7855;
+
+  if (!neighbours[0] && neighbours[1] && !neighbours[2] && !neighbours[3]) return 7855;
+
+  if (neighbours[0] && !neighbours[1] && neighbours[2] && neighbours[3]) return 7519;
+
+  if (neighbours[0] && !neighbours[1] && !neighbours[2] && !neighbours[3]) return 7519;
+
+  if (neighbours[0] && neighbours[1] && !neighbours[2] && neighbours[3]) return 7119;
+
+  if (!neighbours[0] && !neighbours[1] && !neighbours[2] && neighbours[3]) return 7119;
+
+  if (neighbours[0] && neighbours[1] && neighbours[2] && !neighbours[3]) return 5951;
+
+  if (!neighbours[0] && !neighbours[1] && neighbours[2] && !neighbours[3]) return 5951;
+
+  // corners
+  if (!neighbours[0] && neighbours[1] && !neighbours[2] && neighbours[3]) return 6798;
+
+  if (neighbours[0] && !neighbours[1] && !neighbours[2] && neighbours[3]) return 6477;
+
+  if (!neighbours[0] && neighbours[1] && neighbours[2] && !neighbours[3]) return 5675;
+
+  if (neighbours[0] && !neighbours[1] && neighbours[2] && !neighbours[3]) return 5399;
+
+  return 16383;
+};
+
+const calcTableIndexForNeighboursFirstIteration = (neighbours: number[]) => {
+  // ramps
+  if (!neighbours[0] && neighbours[1] && neighbours[2] && neighbours[3]) return 7855;
+
+  if (!neighbours[0] && neighbours[1] && !neighbours[2] && !neighbours[3]) return 7855;
+
+  if (neighbours[0] && !neighbours[1] && neighbours[2] && neighbours[3]) return 7519;
+
+  if (neighbours[0] && !neighbours[1] && !neighbours[2] && !neighbours[3]) return 7519;
+
+  if (neighbours[0] && neighbours[1] && !neighbours[2] && neighbours[3]) return 7119;
+
+  if (!neighbours[0] && !neighbours[1] && !neighbours[2] && neighbours[3]) return 7119;
+
+  if (neighbours[0] && neighbours[1] && neighbours[2] && !neighbours[3]) return 5951;
+
+  if (!neighbours[0] && !neighbours[1] && neighbours[2] && !neighbours[3]) return 5951;
+
+  // corners
+  if (!neighbours[0] && neighbours[1] && !neighbours[2] && neighbours[3]) return 6798;
+
+  if (neighbours[0] && !neighbours[1] && !neighbours[2] && neighbours[3]) return 6477;
+
+  if (!neighbours[0] && neighbours[1] && neighbours[2] && !neighbours[3]) return 5675;
+
+  if (neighbours[0] && !neighbours[1] && neighbours[2] && !neighbours[3]) return 5399;
+
+  return 16383;
+};
+
+const calcTableIndexForNeighboursSecondIteration = (tableIndex: number, neighbours: number[]) => {
+  // corners
+  if (tableIndex !== 16383) return tableIndex;
+
+  if (neighbours[0] === 7119 || neighbours[0] === 6798) {
+    if (neighbours[2] === 7855 || neighbours[2] === 6798) {
+      return 16367;
+    }
+  }
+
+  if (neighbours[1] === 7119 || neighbours[1] === 6477) {
+    if (neighbours[2] === 7519 || neighbours[2] === 6477) {
+      return 16351;
+    }
+  }
+
+  if (neighbours[0] === 5951 || neighbours[0] === 5675) {
+    if (neighbours[3] === 7855 || neighbours[3] === 5675) {
+      return 16319;
+    }
+  }
+
+  if (neighbours[1] === 5951 || neighbours[1] === 5399) {
+    if (neighbours[3] === 7519 || neighbours[3] === 5399) {
+      return 16255;
+    }
+  }
+
+  return tableIndex;
+};
+
+export {
+  generateHeightmap,
+  calcTableIndicesFromHeightmap,
+  isWorldPositionWithinBounds,
+  getTableIndexForNeighbours,
+  calcTableIndexForNeighboursFirstIteration,
+  calcTableIndexForNeighboursSecondIteration,
+};

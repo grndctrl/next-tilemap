@@ -1,24 +1,19 @@
-import {
-  calcBlockIndexForPosition,
-  calcBlockPositionForIndex,
-  calcChunkArrayPositionForPosition,
-  calcChunkIndexForArrayPosition,
-  calcChunkPositionForWorldPosition,
-  calcChunkWorldPositionForIndex,
-  calcWorldIndexFromWorldPosition,
-} from 'utils/chunkUtils';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Vector3 } from 'three';
-import create from 'zustand/vanilla';
-import createHook from 'zustand';
-import { BlockType, calcNeighboursForWorldPosition, getVerticesForTableIndex } from 'utils/blockUtils';
-import createStore, { Schema, Store } from 'utils/typedArrayStore';
+import { BlockType, calcTableIndex, getVerticesForTableIndex } from 'utils/blockUtils';
+import { calcChunkWorldPositionForIndex } from 'utils/chunkUtils';
 
-import { isEqual } from 'lodash';
-import { calcTableIndicesFromHeightmap, generateHeightmap, isWorldPositionWithinBounds } from 'utils/worldUtils';
-import { blockSize, blocksInChunk, totalBlocksInChunk, chunkSize } from 'utils/constants';
+import { blocksInChunk, blockSize, chunkSize, totalBlocksInChunk } from 'utils/constants';
+import {
+  calcTableIndexForNeighbours,
+  calcTableIndexForNeighboursFirstIteration,
+  calcTableIndexForNeighboursSecondIteration,
+  calcTableIndicesFromHeightmap,
+  getTableIndexForNeighbours,
+} from 'utils/worldUtils';
+import Chunk, { chunkStore, useChunkStore } from './Chunk';
+import { useWorld, useWorldGenerator } from './hooks';
 import WorldStore from './WorldStore';
-import Chunk, { useChunkStore, chunkStore } from './Chunk';
 
 export interface WorldMeasurements {
   blocksInChunk: Vector3;
@@ -77,17 +72,98 @@ class World {
   //
 
   public generate() {
-    this.chunks = Array.from({ length: this.measurements.totalChunksInWorld }).map((_, index) => {
+    const promises = Array.from({
+      length: this.measurements.totalChunksInWorld,
+    }).map((_, index) => {
+      return this.generateChunk(index);
+    });
+
+    Promise.all(promises).then((chunks) => (this.chunks = chunks));
+  }
+
+  public generateChunk(index: number): Promise<Chunk> {
+    return new Promise((resolve, reject) => {
       const origin = calcChunkWorldPositionForIndex(index, this.measurements.chunksInWorld);
 
       const chunk = new Chunk(index, origin, this.measurements, this.store);
       chunk.init();
 
-      return chunk;
+      resolve(chunk);
     });
-
-    console.log('store', this.store);
   }
+
+  public generateChunkFromTableIndices(index: number, tableIndices: number[]) {
+    return new Promise<Chunk>((resolve, reject) => {
+      const origin = calcChunkWorldPositionForIndex(index, this.measurements.chunksInWorld);
+
+      const chunk = new Chunk(index, origin, this.measurements, this.store);
+      chunk.initFromTableIndices(tableIndices);
+
+      resolve(chunk);
+    });
+  }
+
+  public modifyChunk(index: number, firstIteration: boolean = true) {
+    return new Promise<string>((resolve, reject) => {
+      if (index < 0 || index > this.chunks.length - 1) reject('chunk index does not exist');
+
+      const chunk = this.chunks[index];
+
+      for (let i = 0; i < chunk.blocks.length; i++) {
+        const id = chunk.blocks[i];
+        const block = this.getBlock(id);
+
+        if (!block) continue;
+
+        if (calcTableIndex(block.vertices) === 0) continue;
+
+        const neighbours = block.neighbours.map((neighbourId) => {
+          if (neighbourId > -1) {
+            const neighbour = this.getBlock(neighbourId);
+
+            if (neighbour) {
+              return calcTableIndex(neighbour.vertices);
+            }
+          }
+
+          return 16383;
+        });
+
+        if (neighbours[5] > 6798) continue;
+
+        let tableIndex = calcTableIndex(block.vertices);
+
+        if (firstIteration) {
+          tableIndex = calcTableIndexForNeighboursFirstIteration(neighbours);
+        } else {
+          tableIndex = calcTableIndexForNeighboursSecondIteration(tableIndex, neighbours);
+        }
+
+        block.vertices = getVerticesForTableIndex(tableIndex);
+
+        this.store.setBlock(block);
+      }
+
+      resolve('completed modification');
+    });
+  }
+
+  //
+
+  // public generateFromHeightmap(heightmap: { height: number; tableIndex: number }[]) {
+  //   const tableIndices = calcTableIndicesFromHeightmap(heightmap);
+
+  //   this.chunks = Array.from({ length: this.totalChunksInWorld }).map((_, index) => {
+  //     const origin = calcChunkWorldPositionForIndex(index);
+
+  //     const chunk = new Chunk(index, origin, this.totalBlocksInChunk);
+  //     chunk.initFromTableIndices(tableIndices, this.localPosition, this.worldPosition, this.vertices, this.neighbours);
+
+  //     return chunk;
+  //   });
+  // }
+
+  //
 
   // public generateFromJSON(data: any) {
   //   if (
@@ -103,19 +179,6 @@ class World {
 
   //     const chunk = new Chunk(index, origin, this.totalBlocksInChunk);
   //     chunk.initWithData(data, this.localPosition, this.worldPosition, this.vertices, this.neighbours);
-
-  //     return chunk;
-  //   });
-  // }
-
-  // public generateFromHeightmap(heightmap: { height: number; tableIndex: number }[]) {
-  //   const tableIndices = calcTableIndicesFromHeightmap(heightmap);
-
-  //   this.chunks = Array.from({ length: this.totalChunksInWorld }).map((_, index) => {
-  //     const origin = calcChunkWorldPositionForIndex(index);
-
-  //     const chunk = new Chunk(index, origin, this.totalBlocksInChunk);
-  //     chunk.initFromTableIndices(tableIndices, this.localPosition, this.worldPosition, this.vertices, this.neighbours);
 
   //     return chunk;
   //   });
@@ -151,52 +214,4 @@ createWorld();
 
 //
 
-const useWorld = () => {
-  const { chunks, measurements } = world;
-
-  const { totalChunksInWorld, totalBlocksInChunk } = measurements;
-  const { chunkRenderKeys, updateRenderKey } = useChunkStore();
-
-  const getBlock = useCallback((query: number | Vector3) => world.getBlock(query), []);
-
-  const setBlock = useCallback(
-    (block: BlockType) => {
-      updateRenderKey(block.parentChunk);
-      world.setBlock(block);
-    },
-    [updateRenderKey]
-  );
-
-  const setBlocks = useCallback(
-    (blocks: BlockType[]) => {
-      const uniqueChunks = new Set<number>([]);
-
-      blocks.forEach((block) => {
-        if (block.neighbours.length === 0) {
-          console.error(block);
-        } else {
-          world.setBlock(block);
-        }
-
-        uniqueChunks.add(block.parentChunk);
-
-        block.neighbours
-          .map((neighbour) => world.getBlock(neighbour))
-          .forEach((neighbour) => {
-            if (neighbour) {
-              uniqueChunks.add(neighbour.parentChunk);
-            }
-          });
-      });
-
-      uniqueChunks.forEach((chunk) => {
-        updateRenderKey(chunk);
-      });
-    },
-    [updateRenderKey]
-  );
-
-  return { chunks, getBlock, setBlock, setBlocks, chunkRenderKeys, updateRenderKey, measurements };
-};
-
-export { useWorld };
+export { useWorld, useWorldGenerator, world };
