@@ -20,11 +20,11 @@ export enum WorldGeneratorState {
 const useWorldGenerator = () => {
   const chunksInWorld = useRef<Vector3>(new Vector3(1, 1, 1));
   const [state, setState] = useState<WorldGeneratorState>(WorldGeneratorState.WAITING);
-  const [progress, setProgress] = useState<number>(0);
+  // const [progress, setProgress] = useState<number>(0);
   const chunksToIterate = useRef<number[]>([]);
-  const chunksToModify = useRef<number[]>([]);
   const chunkIndex = useRef<number | null>(null);
   const tableIndices = useRef<number[]>([]);
+  const progress = useRef<number>(0);
 
   useEffect(() => {
     switch (state) {
@@ -52,9 +52,8 @@ const useWorldGenerator = () => {
       case WorldGeneratorState.GENERATE_CHUNK:
         if (chunkIndex.current === null) return;
 
-        setProgress(
-          chunkIndex.current / (chunksInWorld.current.x * chunksInWorld.current.y * chunksInWorld.current.z - 1)
-        );
+        progress.current =
+          chunkIndex.current / (chunksInWorld.current.x * chunksInWorld.current.y * chunksInWorld.current.z - 1);
 
         world.generateChunkFromTableIndices(chunkIndex.current, tableIndices.current).then((chunk) => {
           world.chunks.push(chunk);
@@ -89,11 +88,14 @@ const useWorldGenerator = () => {
         break;
 
       case WorldGeneratorState.MODIFY_CHUNK_1:
+        console.log(
+          '🚀 ~ file: hooks.ts ~ line 93 ~ WorldGeneratorState.MODIFY_CHUNK_1',
+          WorldGeneratorState.MODIFY_CHUNK_1
+        );
         if (chunkIndex.current === null) return;
 
-        setProgress(
-          chunkIndex.current / (chunksInWorld.current.x * chunksInWorld.current.y * chunksInWorld.current.z - 1)
-        );
+        progress.current =
+          chunkIndex.current / (chunksInWorld.current.x * chunksInWorld.current.y * chunksInWorld.current.z - 1);
 
         world.modifyChunk(chunkIndex.current, true).then(() => {
           chunksToIterate.current = chunksToIterate.current.slice(1);
@@ -111,16 +113,20 @@ const useWorldGenerator = () => {
         break;
 
       case WorldGeneratorState.MODIFY_CHUNK_2:
+        console.log(
+          '🚀 ~ file: hooks.ts ~ line 116 ~ WorldGeneratorState.MODIFY_CHUNK_2',
+          WorldGeneratorState.MODIFY_CHUNK_2
+        );
         if (chunkIndex.current === null) return;
 
-        setProgress(
-          chunkIndex.current / (chunksInWorld.current.x * chunksInWorld.current.y * chunksInWorld.current.z - 1)
-        );
+        progress.current =
+          chunkIndex.current / (chunksInWorld.current.x * chunksInWorld.current.y * chunksInWorld.current.z - 1);
 
         world.modifyChunk(chunkIndex.current, false).then(() => {
           chunksToIterate.current = chunksToIterate.current.slice(1);
           setState(WorldGeneratorState.SELECT_CHUNK_TO_MODIFY_2);
         });
+
         break;
     }
   }, [state]);

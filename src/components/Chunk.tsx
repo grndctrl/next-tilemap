@@ -267,7 +267,6 @@ const Chunk = forwardRef<Mesh, ChunkProps>(({ index, worldPosition, blocks }, re
     const generatedBlockGeometries = geometries.map((geometry) => (geometry ? geometry.blockGeometry : null));
 
     setBlockGeometries(generatedBlockGeometries);
-    console.log('🚀 ~ Chunk:', index, renderKey);
   }, [blocks, generateBlockGeometry, getBlock, renderKey]);
 
   useEffect(() => {

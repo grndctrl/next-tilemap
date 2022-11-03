@@ -101,7 +101,7 @@ const Home: NextPage = () => {
             )}
             {state !== WorldGeneratorState.WAITING && (
               <div className="flex w-full">
-                <Progress value={progress} />
+                <Progress value={progress.current} />
               </div>
             )}
           </div>
