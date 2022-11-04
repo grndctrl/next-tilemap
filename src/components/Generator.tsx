@@ -71,7 +71,7 @@ const Generator = () => {
   };
 
   return (
-    <div className="flex flex-col  font-mono text-sm  w-[400px] lg:text-lg bg-slate-800">
+    <div className="flex flex-col text-sm w-[400px] lg:text-lg bg-slate-800">
       <div className="w-full p-8">
         {state === WorldGeneratorState.WAITING && (
           <>

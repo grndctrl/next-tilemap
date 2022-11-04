@@ -103,7 +103,7 @@ const VertexLabel = ({ isActive, index, position, color, background, onClick }: 
     <Html position={position}>
       <animated.div
         onClick={() => onClick(index)}
-        className="flex items-center justify-center w-6 h-6 -mt-3 -ml-3 font-mono rounded-full cursor-pointer "
+        className="flex items-center justify-center w-6 h-6 -mt-3 -ml-3 rounded-full cursor-pointer "
         style={styles}
       >
         {index}
@@ -254,7 +254,7 @@ const Block = () => {
       </lineSegments>
 
       <Html position={[0, -2 * blockSize.y, 0]}>
-        <animated.div className="px-4 py-2 font-mono rounded-full" style={styles}>
+        <animated.div className="px-4 py-2 rounded-full" style={styles}>
           {calcTableIndex(vertices)}
         </animated.div>
       </Html>

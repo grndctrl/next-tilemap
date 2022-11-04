@@ -2,7 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-@import "ui.css";
+@import 'ui.css';
+
+body {
+  @apply font-mono;
+}
 
 canvas.crisp {
   image-rendering: crisp-edges;
