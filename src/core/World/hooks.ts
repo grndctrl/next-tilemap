@@ -3,7 +3,8 @@ import { Vector3 } from 'three';
 import { BlockType } from 'utils/blockUtils';
 import { convert2DHeightmapTo3DTableIndices } from 'utils/worldUtils';
 import { world } from './';
-import { useChunkStore } from './Chunk';
+import createHook from 'zustand';
+import create from 'zustand/vanilla';
 
 export enum WorldGeneratorState {
   WAITING,
@@ -17,6 +18,29 @@ export enum WorldGeneratorState {
   FINISHED,
 }
 
+interface WorldState {
+  chunkRenderKeys: number[];
+  resetChunkRenderKeys: (totalChunksInWorld: number) => void;
+  updateChunkRenderKey: (index: number) => void;
+}
+
+const globalStore = create<WorldState>()((set, get) => ({
+  chunkRenderKeys: [],
+
+  resetChunkRenderKeys: (totalChunksInWorld: number) => {
+    const chunkRenderKeys = Array.from({ length: totalChunksInWorld }).map(() => 0);
+    set(() => ({ chunkRenderKeys }));
+  },
+
+  updateChunkRenderKey: (index) => {
+    const chunkRenderKeys = get().chunkRenderKeys.slice();
+    chunkRenderKeys[index]++;
+    set(() => ({ chunkRenderKeys }));
+  },
+}));
+
+const useGlobalStore = createHook(globalStore);
+
 const useWorldGenerator = () => {
   const chunksInWorld = useRef<Vector3>(new Vector3(1, 1, 1));
   const [state, setState] = useState<WorldGeneratorState>(WorldGeneratorState.WAITING);
@@ -24,6 +48,7 @@ const useWorldGenerator = () => {
   const chunkIndex = useRef<number | null>(null);
   const tableIndices = useRef<number[]>([]);
   const progress = useRef<number>(0);
+  const { resetChunkRenderKeys } = useGlobalStore();
 
   useEffect(() => {
     switch (state) {
@@ -107,6 +132,7 @@ const useWorldGenerator = () => {
           chunkIndex.current = chunksToIterate.current[0];
           setState(WorldGeneratorState.MODIFY_CHUNK_2);
         } else {
+          resetChunkRenderKeys(chunksInWorld.current.x * chunksInWorld.current.y * chunksInWorld.current.z);
           setState(WorldGeneratorState.FINISHED);
         }
         break;
@@ -147,16 +173,16 @@ const useWorld = () => {
   const { chunks, measurements } = world;
 
   const { totalChunksInWorld, totalBlocksInChunk } = measurements;
-  const { chunkRenderKeys, updateRenderKey } = useChunkStore();
+  const { chunkRenderKeys, updateChunkRenderKey } = useGlobalStore();
 
   const getBlock = useCallback((query: number | Vector3) => world.getBlock(query), []);
 
   const setBlock = useCallback(
     (block: BlockType) => {
-      updateRenderKey(block.parentChunk);
+      updateChunkRenderKey(block.parentChunk);
       world.setBlock(block);
     },
-    [updateRenderKey]
+    [updateChunkRenderKey]
   );
 
   const setBlocks = useCallback(
@@ -182,10 +208,10 @@ const useWorld = () => {
       });
 
       uniqueChunks.forEach((chunk) => {
-        updateRenderKey(chunk);
+        updateChunkRenderKey(chunk);
       });
     },
-    [updateRenderKey]
+    [updateChunkRenderKey]
   );
 
   return {
@@ -194,7 +220,7 @@ const useWorld = () => {
     setBlock,
     setBlocks,
     chunkRenderKeys,
-    updateRenderKey,
+    updateChunkRenderKey,
     measurements,
   };
 };

@@ -163,14 +163,14 @@ class World {
 
 const world = new World();
 
-const createWorld = () => {
-  const { resetChunkRenderKeys } = chunkStore.getState();
-  world.init(new Vector3(2, 2, 2));
-  world.generate();
-  resetChunkRenderKeys(world.measurements.totalChunksInWorld);
-};
+// const createWorld = () => {
+//   const { resetChunkRenderKeys } = chunkStore.getState();
+//   world.init(new Vector3(2, 2, 2));
+//   world.generate();
+//   resetChunkRenderKeys(world.measurements.totalChunksInWorld);
+// };
 
-createWorld();
+// createWorld();
 
 //
 

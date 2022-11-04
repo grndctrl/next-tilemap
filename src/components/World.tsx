@@ -128,7 +128,7 @@ const World = () => {
   });
 
   useEffect(() => {
-    console.log('🚀 ~ file: World.tsx ~ line 134 ~ chunks', chunks);
+    console.log('🚀 ~ measurements', measurements);
   }, []);
 
   return (

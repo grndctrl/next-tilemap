@@ -126,6 +126,9 @@ const Chunk = forwardRef<Mesh, ChunkProps>(({ index, worldPosition, blocks }, re
   const { getBlock, chunkRenderKeys } = useWorld();
   const renderKey = chunkRenderKeys[index];
 
+  useEffect(() => {
+    console.log('chunkRenderKeys', chunkRenderKeys);
+  }, [chunkRenderKeys]);
   // useImperativeHandle(ref, () => ({
   //   mesh,
   // }));
