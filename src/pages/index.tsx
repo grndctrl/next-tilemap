@@ -1,36 +1,45 @@
-import type { NextPage } from 'next';
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
-import Scene from '../components/Scene';
-import UserInterface from '../components/UserInterface';
-import { useWorldGenerator } from 'core/World';
-import { Vector3 } from 'three';
-import { blocksInChunk } from 'utils/constants';
-import { generateHeightmap } from 'utils/worldUtils';
-import Heightmap from 'components/Heightmap';
-import InputRange from 'components/UserInterface/InputRange';
-import Button from 'components/UserInterface/Button';
-import World from 'components/World';
-import InputText from 'components/UserInterface/InputText';
-import Progress from 'components/UserInterface/Progress';
-import { WorldGeneratorState } from 'core/World/hooks';
-import useMeasure from 'react-use-measure';
-import { useSpring, animated } from '@react-spring/web';
+import type { NextPage } from "next";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
+import Scene from "../components/Scene";
+import UserInterface from "../components/UserInterface";
+import { useWorldGenerator } from "core/World";
+import { Vector3 } from "three";
+import { blocksInChunk } from "utils/constants";
+import { generateHeightmap } from "utils/worldUtils";
+import Heightmap from "components/Heightmap";
+import InputRange from "components/UserInterface/InputRange";
+import Button from "components/UserInterface/Button";
+import World from "components/World";
+import InputText from "components/UserInterface/InputText";
+import Progress from "components/UserInterface/Progress";
+import { WorldGeneratorState } from "core/World/hooks";
+import useMeasure from "react-use-measure";
+import { useSpring, animated } from "@react-spring/web";
+import SceneInterface from "components/UserInterface/SceneInterface";
 
 const Home: NextPage = () => {
   const { state, init, progress } = useWorldGenerator();
 
-  const [seed, setSeed] = useState<string>(Math.random().toString().slice(2, 10));
-  const [size, setSize] = useState<number>(1);
-  const [resolution, setResolution] = useState<number>(0.025);
+  const [seed, setSeed] = useState<string>(
+    // Math.random().toString().slice(2, 10)
+    "0"
+  );
+  const [size, setSize] = useState<number>(3);
+  const [resolution, setResolution] = useState<number>(0.075);
+  const [height, setHeight] = useState<number>(1);
 
-  const [heightmap, setHeightmap] = useState<{ height: number; tableIndex: number }[]>([]);
+  const [heightmap, setHeightmap] = useState<
+    { height: number; tableIndex: number }[]
+  >([]);
 
   const chunksInWorld = useRef<Vector3>(new Vector3(1, 1, 1));
   const blocksInWorld = useRef<Vector3>(blocksInChunk.clone());
 
   useEffect(() => {
     chunksInWorld.current.set(size, size, size);
-    blocksInWorld.current = chunksInWorld.current.clone().multiply(blocksInChunk);
+    blocksInWorld.current = chunksInWorld.current
+      .clone()
+      .multiply(blocksInChunk);
 
     setHeightmap(generateHeightmap(blocksInWorld.current, seed, resolution));
   }, [size, seed, resolution]);
@@ -68,14 +77,17 @@ const Home: NextPage = () => {
   };
 
   return (
-    <div className="fixed flex flex-col items-center justify-center w-full h-screen bg-slate-900">
+    <div className="fixed flex flex-col items-center justify-center w-full h-screen bg-amber-50">
       {state !== WorldGeneratorState.FINISHED && (
-        <animated.div className="flex flex-col  font-mono text-sm border-2 w-[400px] lg:text-lg border-slate-200 bg-slate-900">
+        <animated.div className="flex flex-col  font-mono text-sm  w-[400px] lg:text-lg bg-slate-800">
           <div className="w-full p-8">
             {state === WorldGeneratorState.WAITING && (
               <>
                 <div className="relative mb-4">
-                  <Heightmap tiles={heightmap} blocksInWorld={blocksInWorld.current} />
+                  <Heightmap
+                    tiles={heightmap}
+                    blocksInWorld={blocksInWorld.current}
+                  />
                 </div>
                 <div className="flex my-4">
                   {<InputText value={seed} onChange={handleSeedChange} />}
@@ -83,7 +95,13 @@ const Home: NextPage = () => {
                   <Button onClick={handleRandomizeClick} label="randomize" />
                 </div>
                 <div className="relative my-4">
-                  <InputRange value={size} min={1} max={4} step={1} onChange={handleSizeChange} />
+                  <InputRange
+                    value={size}
+                    min={1}
+                    max={4}
+                    step={1}
+                    onChange={handleSizeChange}
+                  />
                 </div>
                 <div className="relative my-4">
                   <InputRange
@@ -107,7 +125,11 @@ const Home: NextPage = () => {
           </div>
         </animated.div>
       )}
-      {state === WorldGeneratorState.FINISHED && <Scene />}
+      {state === WorldGeneratorState.FINISHED && (
+        <>
+          <Scene />
+        </>
+      )}
     </div>
   );
 };

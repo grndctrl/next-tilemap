@@ -1,17 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { Vector3 } from 'three';
-import { BlockType, calcTableIndex, getVerticesForTableIndex } from 'utils/blockUtils';
+import { calcTableIndex, getVerticesForTableIndex } from 'utils/blockUtils';
 import { calcChunkWorldPositionForIndex } from 'utils/chunkUtils';
 
 import { blocksInChunk, blockSize, chunkSize, totalBlocksInChunk } from 'utils/constants';
 import {
-  calcTableIndexForNeighbours,
   calcTableIndexForNeighboursFirstIteration,
   calcTableIndexForNeighboursSecondIteration,
-  calcTableIndicesFromHeightmap,
-  getTableIndexForNeighbours,
 } from 'utils/worldUtils';
-import Chunk, { chunkStore, useChunkStore } from './Chunk';
+import Chunk, { chunkStore } from './Chunk';
 import { useWorld, useWorldGenerator } from './hooks';
 import WorldStore from './WorldStore';
 
@@ -110,7 +106,7 @@ class World {
       const chunk = this.chunks[index];
 
       for (let i = 0; i < chunk.blocks.length; i++) {
-        const id = chunk.blocks[i];
+        const id = chunk.blocks[chunk.blocks.length - 1 - i];
         const block = this.getBlock(id);
 
         if (!block) continue;
@@ -129,13 +125,13 @@ class World {
           return 16383;
         });
 
-        if (neighbours[5] > 6798) continue;
-
         let tableIndex = calcTableIndex(block.vertices);
 
         if (firstIteration) {
+          if (neighbours[5] > 0) continue;
           tableIndex = calcTableIndexForNeighboursFirstIteration(neighbours);
         } else {
+          if (neighbours[5] > 6798) continue;
           tableIndex = calcTableIndexForNeighboursSecondIteration(tableIndex, neighbours);
         }
 
@@ -147,42 +143,6 @@ class World {
       resolve('completed modification');
     });
   }
-
-  //
-
-  // public generateFromHeightmap(heightmap: { height: number; tableIndex: number }[]) {
-  //   const tableIndices = calcTableIndicesFromHeightmap(heightmap);
-
-  //   this.chunks = Array.from({ length: this.totalChunksInWorld }).map((_, index) => {
-  //     const origin = calcChunkWorldPositionForIndex(index);
-
-  //     const chunk = new Chunk(index, origin, this.totalBlocksInChunk);
-  //     chunk.initFromTableIndices(tableIndices, this.localPosition, this.worldPosition, this.vertices, this.neighbours);
-
-  //     return chunk;
-  //   });
-  // }
-
-  //
-
-  // public generateFromJSON(data: any) {
-  //   if (
-  //     this.totalBlocksInChunk !== data.totalBlocksInChunk ||
-  //     this.totalChunksInWorld !== data.totalChunksInWorld ||
-  //     this.totalBlocksInWorld !== data.totalBlocksInWorld
-  //   ) {
-  //     return console.error('world sizes are different');
-  //   }
-
-  //   this.chunks = Array.from({ length: this.totalChunksInWorld }).map((_, index) => {
-  //     const origin = calcChunkWorldPositionForIndex(index);
-
-  //     const chunk = new Chunk(index, origin, this.totalBlocksInChunk);
-  //     chunk.initWithData(data, this.localPosition, this.worldPosition, this.vertices, this.neighbours);
-
-  //     return chunk;
-  //   });
-  // }
 
   //
 

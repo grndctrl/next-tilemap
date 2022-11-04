@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Vector3 } from 'three';
 import { BlockType } from 'utils/blockUtils';
-import { calcTableIndicesFromHeightmap } from 'utils/worldUtils';
+import { convert2DHeightmapTo3DTableIndices } from 'utils/worldUtils';
 import { world } from './';
 import { useChunkStore } from './Chunk';
 
@@ -20,7 +20,6 @@ export enum WorldGeneratorState {
 const useWorldGenerator = () => {
   const chunksInWorld = useRef<Vector3>(new Vector3(1, 1, 1));
   const [state, setState] = useState<WorldGeneratorState>(WorldGeneratorState.WAITING);
-  // const [progress, setProgress] = useState<number>(0);
   const chunksToIterate = useRef<number[]>([]);
   const chunkIndex = useRef<number | null>(null);
   const tableIndices = useRef<number[]>([]);
@@ -81,7 +80,7 @@ const useWorldGenerator = () => {
           chunksToIterate.current = Array.from({
             length: world.measurements.totalChunksInWorld,
           }).map((_, index) => {
-            return index;
+            return world.measurements.totalChunksInWorld - index - 1;
           });
           setState(WorldGeneratorState.SELECT_CHUNK_TO_MODIFY_2);
         }
@@ -137,7 +136,7 @@ const useWorldGenerator = () => {
   ) => {
     console.log(heightmap);
     chunksInWorld.current = measurements.chunksInWorld;
-    tableIndices.current = calcTableIndicesFromHeightmap(heightmap, measurements.blocksInWorld);
+    tableIndices.current = convert2DHeightmapTo3DTableIndices(heightmap, measurements.blocksInWorld);
     setState(WorldGeneratorState.INIT_WORLD);
   };
 

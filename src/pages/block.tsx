@@ -307,7 +307,7 @@ const Page: NextPage = () => {
   camera.far = 1000;
 
   return (
-    <div className="fixed w-full h-screen bg-slate-900">
+    <div className="fixed w-full h-screen bg-amber-50">
       <Leva theme={{ colors: levaTheme }} />
       <Canvas camera={camera} dpr={1}>
         <ambientLight intensity={0.5} />
