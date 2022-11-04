@@ -2,4 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-@import 'ui.css';
+@import "ui.css";
+
+canvas.crisp {
+  image-rendering: crisp-edges;
+}
