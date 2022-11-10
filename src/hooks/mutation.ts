@@ -1,22 +1,13 @@
-import { uniq } from 'lodash';
-import { useEffect, useState } from 'react';
-import { Vector3 } from 'three';
-import { BlockType, calcTableIndex, getVerticesForTableIndex } from '../utils/blockUtils';
-import { blockSize } from '../utils/constants';
-import { useWorld } from 'core/World';
-
-interface GetBlock {
-  (query: number | Vector3): {
-    id: number;
-    index: number;
-    parentChunk: number;
-    isActive: boolean;
-    localPosition: Vector3;
-    worldPosition: Vector3;
-    neighbours: number[];
-    vertices: boolean[];
-  } | null;
-}
+import { uniq } from "lodash";
+import { useEffect, useState } from "react";
+import { Vector3 } from "three";
+import {
+  BlockType,
+  calcTableIndex,
+  getVerticesForTableIndex,
+} from "../utils/blockUtils";
+import { blockSize } from "../utils/constants";
+import { useWorld, GetBlock } from "core/World";
 
 const getBlockForAddition = (
   getBlock: GetBlock,
@@ -33,7 +24,9 @@ const getBlockForAddition = (
       return { block: block, vertex: vertex };
     }
 
-    const blockBelow = getBlock(worldPosition.clone().add(new Vector3(0, -blockSize.y, 0)));
+    const blockBelow = getBlock(
+      worldPosition.clone().add(new Vector3(0, -blockSize.y, 0))
+    );
     if (blockBelow?.vertices[vertex + 4]) {
       return { block: block, vertex: vertex };
     }
@@ -42,7 +35,11 @@ const getBlockForAddition = (
   return null;
 };
 
-const getBlocksForAddition = (getBlock: GetBlock, vertex: number, block: BlockType) => {
+const getBlocksForAddition = (
+  getBlock: GetBlock,
+  vertex: number,
+  block: BlockType
+) => {
   const blocks: ({ block: BlockType; vertex: number } | null)[] = [];
 
   switch (vertex) {
@@ -52,40 +49,80 @@ const getBlocksForAddition = (getBlock: GetBlock, vertex: number, block: BlockTy
       blocks[0] = getBlockForAddition(
         getBlock,
         3,
-        block.worldPosition.clone().add(new Vector3(-blockSize.x, 0, -blockSize.z))
+        block.worldPosition
+          .clone()
+          .add(new Vector3(-blockSize.x, 0, -blockSize.z))
       );
-      blocks[1] = getBlockForAddition(getBlock, 2, block.worldPosition.clone().add(new Vector3(0, 0, -blockSize.z)));
-      blocks[2] = getBlockForAddition(getBlock, 1, block.worldPosition.clone().add(new Vector3(-blockSize.x, 0, 0)));
-      blocks[3] = { vertex: 0, block };
-      break;
-    case 1:
-      blocks[0] = getBlockForAddition(getBlock, 3, block.worldPosition.clone().add(new Vector3(0, 0, -blockSize.z)));
       blocks[1] = getBlockForAddition(
         getBlock,
         2,
-        block.worldPosition.clone().add(new Vector3(blockSize.x, 0, -blockSize.z))
+        block.worldPosition.clone().add(new Vector3(0, 0, -blockSize.z))
+      );
+      blocks[2] = getBlockForAddition(
+        getBlock,
+        1,
+        block.worldPosition.clone().add(new Vector3(-blockSize.x, 0, 0))
+      );
+      blocks[3] = { vertex: 0, block };
+      break;
+    case 1:
+      blocks[0] = getBlockForAddition(
+        getBlock,
+        3,
+        block.worldPosition.clone().add(new Vector3(0, 0, -blockSize.z))
+      );
+      blocks[1] = getBlockForAddition(
+        getBlock,
+        2,
+        block.worldPosition
+          .clone()
+          .add(new Vector3(blockSize.x, 0, -blockSize.z))
       );
       blocks[2] = { vertex: 1, block };
-      blocks[3] = getBlockForAddition(getBlock, 0, block.worldPosition.clone().add(new Vector3(blockSize.x, 0, 0)));
+      blocks[3] = getBlockForAddition(
+        getBlock,
+        0,
+        block.worldPosition.clone().add(new Vector3(blockSize.x, 0, 0))
+      );
       break;
     case 2:
-      blocks[0] = getBlockForAddition(getBlock, 3, block.worldPosition.clone().add(new Vector3(-blockSize.x, 0, 0)));
+      blocks[0] = getBlockForAddition(
+        getBlock,
+        3,
+        block.worldPosition.clone().add(new Vector3(-blockSize.x, 0, 0))
+      );
       blocks[1] = { vertex: 2, block };
       blocks[2] = getBlockForAddition(
         getBlock,
         1,
-        block.worldPosition.clone().add(new Vector3(-blockSize.x, 0, blockSize.z))
+        block.worldPosition
+          .clone()
+          .add(new Vector3(-blockSize.x, 0, blockSize.z))
       );
-      blocks[3] = getBlockForAddition(getBlock, 0, block.worldPosition.clone().add(new Vector3(0, 0, blockSize.z)));
-      break;
-    case 3:
-      blocks[0] = { vertex: 3, block };
-      blocks[1] = getBlockForAddition(getBlock, 2, block.worldPosition.clone().add(new Vector3(blockSize.x, 0, 0)));
-      blocks[2] = getBlockForAddition(getBlock, 1, block.worldPosition.clone().add(new Vector3(0, 0, blockSize.z)));
       blocks[3] = getBlockForAddition(
         getBlock,
         0,
-        block.worldPosition.clone().add(new Vector3(blockSize.x, 0, blockSize.z))
+        block.worldPosition.clone().add(new Vector3(0, 0, blockSize.z))
+      );
+      break;
+    case 3:
+      blocks[0] = { vertex: 3, block };
+      blocks[1] = getBlockForAddition(
+        getBlock,
+        2,
+        block.worldPosition.clone().add(new Vector3(blockSize.x, 0, 0))
+      );
+      blocks[2] = getBlockForAddition(
+        getBlock,
+        1,
+        block.worldPosition.clone().add(new Vector3(0, 0, blockSize.z))
+      );
+      blocks[3] = getBlockForAddition(
+        getBlock,
+        0,
+        block.worldPosition
+          .clone()
+          .add(new Vector3(blockSize.x, 0, blockSize.z))
       );
       break;
   }
@@ -209,7 +246,9 @@ const getBlockForRemoval = (
   vertex: number,
   worldPosition: Vector3
 ): { block: BlockType; vertex: number } | null => {
-  const blockAbove = getBlock(worldPosition.clone().add(new Vector3(0, blockSize.y, 0)));
+  const blockAbove = getBlock(
+    worldPosition.clone().add(new Vector3(0, blockSize.y, 0))
+  );
 
   if (blockAbove) {
     if (blockAbove.vertices[vertex]) {
@@ -226,7 +265,11 @@ const getBlockForRemoval = (
   return null;
 };
 
-const getBlocksForRemoval = (getBlock: GetBlock, vertex: number, block: BlockType) => {
+const getBlocksForRemoval = (
+  getBlock: GetBlock,
+  vertex: number,
+  block: BlockType
+) => {
   const blocks: ({ block: BlockType; vertex: number } | null)[] = [];
 
   switch (vertex) {
@@ -236,40 +279,80 @@ const getBlocksForRemoval = (getBlock: GetBlock, vertex: number, block: BlockTyp
       blocks[0] = getBlockForRemoval(
         getBlock,
         7,
-        block.worldPosition.clone().add(new Vector3(-blockSize.x, 0, -blockSize.z))
+        block.worldPosition
+          .clone()
+          .add(new Vector3(-blockSize.x, 0, -blockSize.z))
       );
-      blocks[1] = getBlockForRemoval(getBlock, 6, block.worldPosition.clone().add(new Vector3(0, 0, -blockSize.z)));
-      blocks[2] = getBlockForRemoval(getBlock, 5, block.worldPosition.clone().add(new Vector3(-blockSize.x, 0, 0)));
-      blocks[3] = { vertex: 4, block };
-      break;
-    case 5:
-      blocks[0] = getBlockForRemoval(getBlock, 7, block.worldPosition.clone().add(new Vector3(0, 0, -blockSize.z)));
       blocks[1] = getBlockForRemoval(
         getBlock,
         6,
-        block.worldPosition.clone().add(new Vector3(blockSize.x, 0, -blockSize.z))
+        block.worldPosition.clone().add(new Vector3(0, 0, -blockSize.z))
+      );
+      blocks[2] = getBlockForRemoval(
+        getBlock,
+        5,
+        block.worldPosition.clone().add(new Vector3(-blockSize.x, 0, 0))
+      );
+      blocks[3] = { vertex: 4, block };
+      break;
+    case 5:
+      blocks[0] = getBlockForRemoval(
+        getBlock,
+        7,
+        block.worldPosition.clone().add(new Vector3(0, 0, -blockSize.z))
+      );
+      blocks[1] = getBlockForRemoval(
+        getBlock,
+        6,
+        block.worldPosition
+          .clone()
+          .add(new Vector3(blockSize.x, 0, -blockSize.z))
       );
       blocks[2] = { vertex: 5, block };
-      blocks[3] = getBlockForRemoval(getBlock, 4, block.worldPosition.clone().add(new Vector3(blockSize.x, 0, 0)));
+      blocks[3] = getBlockForRemoval(
+        getBlock,
+        4,
+        block.worldPosition.clone().add(new Vector3(blockSize.x, 0, 0))
+      );
       break;
     case 6:
-      blocks[0] = getBlockForRemoval(getBlock, 7, block.worldPosition.clone().add(new Vector3(-blockSize.x, 0, 0)));
+      blocks[0] = getBlockForRemoval(
+        getBlock,
+        7,
+        block.worldPosition.clone().add(new Vector3(-blockSize.x, 0, 0))
+      );
       blocks[1] = { vertex: 6, block };
       blocks[2] = getBlockForRemoval(
         getBlock,
         5,
-        block.worldPosition.clone().add(new Vector3(-blockSize.x, 0, blockSize.z))
+        block.worldPosition
+          .clone()
+          .add(new Vector3(-blockSize.x, 0, blockSize.z))
       );
-      blocks[3] = getBlockForRemoval(getBlock, 4, block.worldPosition.clone().add(new Vector3(0, 0, blockSize.z)));
-      break;
-    case 7:
-      blocks[0] = { vertex: 7, block };
-      blocks[1] = getBlockForRemoval(getBlock, 6, block.worldPosition.clone().add(new Vector3(blockSize.x, 0, 0)));
-      blocks[2] = getBlockForRemoval(getBlock, 5, block.worldPosition.clone().add(new Vector3(0, 0, blockSize.z)));
       blocks[3] = getBlockForRemoval(
         getBlock,
         4,
-        block.worldPosition.clone().add(new Vector3(blockSize.x, 0, blockSize.z))
+        block.worldPosition.clone().add(new Vector3(0, 0, blockSize.z))
+      );
+      break;
+    case 7:
+      blocks[0] = { vertex: 7, block };
+      blocks[1] = getBlockForRemoval(
+        getBlock,
+        6,
+        block.worldPosition.clone().add(new Vector3(blockSize.x, 0, 0))
+      );
+      blocks[2] = getBlockForRemoval(
+        getBlock,
+        5,
+        block.worldPosition.clone().add(new Vector3(0, 0, blockSize.z))
+      );
+      blocks[3] = getBlockForRemoval(
+        getBlock,
+        4,
+        block.worldPosition
+          .clone()
+          .add(new Vector3(blockSize.x, 0, blockSize.z))
       );
       break;
   }
@@ -405,11 +488,17 @@ const useMutation = (vertex: number, block: BlockType) => {
     if (vertex < 4) {
       blocksForAddition = getBlocksForAddition(getBlock, vertex, block);
     } else {
-      const positionAbove = block.worldPosition.clone().add(new Vector3(0, blockSize.y, 0));
+      const positionAbove = block.worldPosition
+        .clone()
+        .add(new Vector3(0, blockSize.y, 0));
 
       const blockAbove = getBlock(positionAbove);
       if (blockAbove) {
-        blocksForAddition = getBlocksForAddition(getBlock, vertex - 4, blockAbove);
+        blocksForAddition = getBlocksForAddition(
+          getBlock,
+          vertex - 4,
+          blockAbove
+        );
       }
     }
 
@@ -423,9 +512,15 @@ const useMutation = (vertex: number, block: BlockType) => {
     if (vertex >= 4) {
       blocksForRemoval = getBlocksForRemoval(getBlock, vertex, block);
     } else {
-      const blockBelow = getBlock(block.worldPosition.clone().add(new Vector3(0, -blockSize.y, 0)));
+      const blockBelow = getBlock(
+        block.worldPosition.clone().add(new Vector3(0, -blockSize.y, 0))
+      );
       if (blockBelow) {
-        blocksForRemoval = getBlocksForRemoval(getBlock, vertex + 4, blockBelow);
+        blocksForRemoval = getBlocksForRemoval(
+          getBlock,
+          vertex + 4,
+          blockBelow
+        );
       }
     }
 
@@ -438,7 +533,10 @@ const useMutation = (vertex: number, block: BlockType) => {
         const additionBlockBefore: BlockType = { ...addition.block };
 
         const tableIndex = calcTableIndex(addition.block.vertices);
-        const additionTableIndex = calcAdditionTableIndex(addition.vertex, tableIndex);
+        const additionTableIndex = calcAdditionTableIndex(
+          addition.vertex,
+          tableIndex
+        );
 
         // const additionBlock: BlockType = {
         //   id: addition.block.id,
@@ -460,8 +558,16 @@ const useMutation = (vertex: number, block: BlockType) => {
         currentBlocks.push(addition.block);
         additionBlocks.push(additionBlock);
 
-        const oneBlockBelow = getBlock(additionBlock.worldPosition.clone().add(new Vector3(0, -blockSize.y, 0)));
-        const twoBlocksBelow = getBlock(additionBlock.worldPosition.clone().add(new Vector3(0, -2 * blockSize.y, 0)));
+        const oneBlockBelow = getBlock(
+          additionBlock.worldPosition
+            .clone()
+            .add(new Vector3(0, -blockSize.y, 0))
+        );
+        const twoBlocksBelow = getBlock(
+          additionBlock.worldPosition
+            .clone()
+            .add(new Vector3(0, -2 * blockSize.y, 0))
+        );
         if (oneBlockBelow) {
           let belowTableIndex = 16383;
 
@@ -509,7 +615,10 @@ const useMutation = (vertex: number, block: BlockType) => {
     blocksForRemoval.forEach((removal) => {
       if (removal) {
         const tableIndex = calcTableIndex(removal.block.vertices);
-        const removalTableIndex = calcRemovalTableIndex(removal.vertex, tableIndex);
+        const removalTableIndex = calcRemovalTableIndex(
+          removal.vertex,
+          tableIndex
+        );
 
         currentBlocks.push(removal.block);
         const removalBlock = {
@@ -524,8 +633,14 @@ const useMutation = (vertex: number, block: BlockType) => {
         };
         removalBlocks.push(removalBlock);
 
-        const oneBlockAbove = getBlock(removalBlock.worldPosition.clone().add(new Vector3(0, blockSize.y, 0)));
-        const twoBlocksAbove = getBlock(removalBlock.worldPosition.clone().add(new Vector3(0, 2 * blockSize.y, 0)));
+        const oneBlockAbove = getBlock(
+          removalBlock.worldPosition.clone().add(new Vector3(0, blockSize.y, 0))
+        );
+        const twoBlocksAbove = getBlock(
+          removalBlock.worldPosition
+            .clone()
+            .add(new Vector3(0, 2 * blockSize.y, 0))
+        );
 
         if (oneBlockAbove) {
           let aboveTableIndex = 0;

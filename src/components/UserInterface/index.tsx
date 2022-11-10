@@ -4,11 +4,15 @@ import { useMouseControls } from '../../hooks/mouseControls';
 import { useInterfaceStore } from '../../utils/interfaceStore';
 import { UISelection } from '../../utils/interfaceUtils';
 import { useWorld } from 'core/World';
-import { Button } from './ToggleButton';
+import Toggle from './Toggle';
+import { useTrack } from 'core/Track/hooks';
+import EditTrackModal from './EditTrackModal';
+import GlowThing from './GlowThing';
 // import EditRoad from './EditRoad';
 
 const UserInterface = () => {
   const { currUISelection, setCurrUISelection } = useInterfaceStore();
+  const { length } = useTrack();
 
   const controls = useMouseControls();
 
@@ -30,28 +34,27 @@ const UserInterface = () => {
 
   return (
     <div className="fixed top-0 left-0 z-10 flex flex-col w-full">
-      <div className="flex justify-start w-full p-8 backdrop-blur-xl">
-        <Button isActive={currUISelection === null} onClick={handleCameraClick} currUISelection={currUISelection}>
+      <div className="flex justify-between w-full p-8 backdrop-blur-xl bg-slate-900 text-slate-900 bg-opacity-20">
+        <Toggle isActive={currUISelection === null} onClick={handleCameraClick}>
           <MdFlipCameraAndroid className="w-6 h-6" />
-        </Button>
+        </Toggle>
 
-        <Button
-          isActive={currUISelection === UISelection.SCULPT}
-          onClick={handleSculptClick}
-          currUISelection={currUISelection}
-        >
+        <Toggle isActive={currUISelection === UISelection.SCULPT} onClick={handleSculptClick}>
           <MdOutlineTerrain className="w-6 h-6" />
-        </Button>
+        </Toggle>
 
-        <Button isActive={false} onClick={handleAddRoadClick}>
-          <MdAddRoad className="w-6 h-6" />
-        </Button>
-
-        <Button isActive={false} onClick={handleEditRoadClick}>
-          <MdEditRoad className="w-6 h-6" />
-        </Button>
+        {length === 0 && (
+          <Toggle onClick={handleAddRoadClick} isActive={currUISelection === UISelection.ADDROAD}>
+            <MdAddRoad className="w-6 h-6" />
+          </Toggle>
+        )}
+        {length > 0 && (
+          <Toggle onClick={handleEditRoadClick} isActive={currUISelection === UISelection.EDITROAD}>
+            <MdEditRoad className="w-6 h-6" />
+          </Toggle>
+        )}
       </div>
-      <div className="flex-shrink p-8 backdrop-blur-xl w-[400px] m-8"></div>
+      {(currUISelection === UISelection.ADDROAD || currUISelection === UISelection.EDITROAD) && <EditTrackModal />}
     </div>
   );
 };

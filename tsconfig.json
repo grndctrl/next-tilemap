@@ -16,9 +16,10 @@
     "incremental": true,
     "baseUrl": "src",
     "paths": {
-      "utils/*": ["utils/*"],
+      "components/*": ["components/*"],
       "core/*": ["core/*"],
-      "components/*": ["components/*"]
+      "hooks/*": ["hooks/*"],
+      "utils/*": ["utils/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "src/utils/worldStore.bak"],

@@ -2,11 +2,11 @@ import { Sphere } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef, useState } from 'react';
 import { BufferGeometry, Mesh, Raycaster, Vector3 } from 'three';
-import { useMutation } from '../hooks/mutation';
+import { useMutation } from 'hooks/mutation';
 import { useWorld } from 'core/World';
-import { blockSize } from '../utils/constants';
-import { useInterfaceStore } from '../utils/interfaceStore';
-import { BlockType } from '../utils/blockUtils';
+import { blockSize } from 'utils/constants';
+import { useInterfaceStore } from 'utils/interfaceStore';
+import { BlockType } from 'utils/blockUtils';
 
 type MutatorProps = {
   block: BlockType;

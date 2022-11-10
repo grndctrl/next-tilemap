@@ -1,6 +1,6 @@
 import { Sphere } from '@react-three/drei';
 import { BufferGeometry, Vector3 } from 'three';
-import { BlockType } from '../utils/blockUtils';
+import { BlockType } from 'utils/blockUtils';
 
 type IndicatorProps = {
   block: BlockType;

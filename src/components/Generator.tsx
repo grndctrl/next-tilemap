@@ -13,6 +13,7 @@ import { blocksInChunk } from 'utils/constants';
 import { generateHeightmap } from 'utils/worldUtils';
 import Scene from '../components/Scene';
 import { useInterfaceStore } from 'utils/interfaceStore';
+import { config } from 'utils/colors';
 
 const Generator = () => {
   const toggleGeneratingWorld = useInterfaceStore((state) => state.toggleGeneratingWorld);
@@ -23,7 +24,7 @@ const Generator = () => {
     // Math.random().toString().slice(2, 10)
     '0'
   );
-  const [size, setSize] = useState<number>(4);
+  const [size, setSize] = useState<number>(1);
   const [resolution, setResolution] = useState<number>(0.075);
   const [height, setHeight] = useState<number>(1);
 
@@ -81,7 +82,9 @@ const Generator = () => {
             <div className="flex my-4">
               {<InputText value={seed} onChange={handleSeedChange} />}
 
-              <Button onClick={handleRandomizeClick} label="randomize" />
+              <Button colors={config.button.yellow} onClick={handleRandomizeClick}>
+                randomize
+              </Button>
             </div>
             <div className="relative my-4">
               <InputRange value={size} min={1} max={4} step={1} onChange={handleSizeChange} />
@@ -90,7 +93,9 @@ const Generator = () => {
               <InputRange value={resolution} min={0.025} max={0.075} step={0.025} onChange={handleResolutionChange} />
             </div>
             <div className="relative mt-4">
-              <Button onClick={handleClick} label="generate world" />
+              <Button colors={config.button.yellow} onClick={handleClick}>
+                generate world
+              </Button>
             </div>
           </>
         )}

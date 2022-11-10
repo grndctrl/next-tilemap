@@ -1,15 +1,15 @@
-import { Html } from "@react-three/drei";
-import { useEffect } from "react";
-import { calcTableIndex } from "utils/blockUtils";
-import { useMouseControls } from "../../hooks/mouseControls";
-import { useInterfaceStore } from "../../utils/interfaceStore";
-import { UISelection } from "../../utils/interfaceUtils";
-import Mutator from "../Mutator";
-import Indicator from "./../Indicator";
+import { Html } from '@react-three/drei';
+import { useEffect } from 'react';
+import { calcTableIndex } from 'utils/blockUtils';
+import { useMouseControls } from '../../hooks/mouseControls';
+import { useInterfaceStore } from '../../utils/interfaceStore';
+import { UISelection } from '../../utils/interfaceUtils';
+import Mutator from './Mutator';
+import Indicator from './Indicator';
+import AddTrack from './AddTrack';
 
 const SceneInterface = () => {
-  const { blockHovered, blockMutated, setBlockMutated, currUISelection } =
-    useInterfaceStore();
+  const { blockHovered, blockMutated, setBlockMutated, currUISelection } = useInterfaceStore();
 
   const { leftButton, rightButton, drag } = useMouseControls();
 
@@ -31,14 +31,10 @@ const SceneInterface = () => {
   return (
     <group>
       {!blockMutated && blockHovered && (
-        <Indicator
-          {...blockHovered}
-          showVertex={currUISelection === UISelection.SCULPT}
-        />
+        <Indicator {...blockHovered} showVertex={currUISelection === UISelection.SCULPT} />
       )}
-      {currUISelection === UISelection.SCULPT && blockMutated && (
-        <Mutator {...blockMutated} />
-      )}
+      {currUISelection === UISelection.SCULPT && blockMutated && <Mutator {...blockMutated} />}
+      {currUISelection === UISelection.ADDROAD && blockHovered && <AddTrack block={blockHovered.block} />}
     </group>
   );
 };

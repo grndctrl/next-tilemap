@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 import createStore, { Schema, Store } from 'utils/typedArrayStore';
-import { TrackDirectionType, TrackType, TrackVariation } from '.';
+import { TrackBlockType, TrackDirectionType, TrackType } from './';
 
 const worldPositionSchema: Schema = {
   x: 'Float32',
@@ -74,7 +74,7 @@ class TrackStore {
     return -1;
   }
 
-  public getBlock(query: number | Vector3) {
+  public getBlock(query: number | Vector3): TrackBlockType | null {
     let id = -1;
 
     if (typeof query !== 'number') {

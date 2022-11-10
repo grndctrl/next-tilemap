@@ -1,10 +1,11 @@
-import { BufferGeometry, Vector3 } from "three";
-import createHook from "zustand";
-import { devtools } from "zustand/middleware";
-import create from "zustand/vanilla";
+import { BufferGeometry, Vector3 } from 'three';
+import createHook from 'zustand';
+import { devtools } from 'zustand/middleware';
+import create from 'zustand/vanilla';
 // import { DirectionAngle } from '../components/Road';
-import { BlockType } from "./blockUtils";
-import { UISelection } from "./interfaceUtils";
+import { BlockType } from './blockUtils';
+import { UISelection } from './interfaceUtils';
+import { TrackAngle, TrackVariation } from 'core/Track';
 
 type InterfaceStore = {
   blockHovered: {
@@ -43,9 +44,12 @@ type InterfaceStore = {
 
   toggleGeneratingWorld: (toggle: boolean) => void;
 
-  // currEditRoadAngle: DirectionAngle;
+  trackSettings: {
+    angle: TrackAngle;
+    variation: TrackVariation;
+  };
 
-  // setEditRoadAngle: (angle: DirectionAngle) => void;
+  setTrackSettings: (settings: { angle?: TrackAngle; variation?: TrackVariation }) => void;
 };
 
 const interfaceStore = create<InterfaceStore>()(
@@ -65,8 +69,7 @@ const interfaceStore = create<InterfaceStore>()(
 
       currUISelection: null,
 
-      setCurrUISelection: (selection) =>
-        set(() => ({ currUISelection: selection })),
+      setCurrUISelection: (selection) => set(() => ({ currUISelection: selection })),
 
       isGeneratingWorld: false,
 
@@ -74,11 +77,16 @@ const interfaceStore = create<InterfaceStore>()(
         set(() => ({ isGeneratingWorld: toggle }));
       },
 
-      // currEditRoadAngle: DirectionAngle.STRAIGHT,
+      trackSettings: { angle: TrackAngle.STRAIGHT, variation: TrackVariation.FORWARD },
 
-      // setEditRoadAngle: (angle) => set(() => ({ currEditRoadAngle: angle })),
+      setTrackSettings: (settings) => {
+        const angle = settings.angle !== undefined ? settings.angle : get().trackSettings.angle;
+        const variation = settings.variation !== undefined ? settings.variation : get().trackSettings.variation;
+
+        set(() => ({ trackSettings: { angle, variation } }));
+      },
     }),
-    { name: "Interface store" }
+    { name: 'Interface store' }
   )
 );
 

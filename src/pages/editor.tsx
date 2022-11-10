@@ -9,7 +9,7 @@ const Editor: NextPage = () => {
   return (
     <div className="fixed w-full h-screen bg-slate-900">
       <UserInterface />
-      <Scene />
+      {/* <Scene /> */}
     </div>
   );
 };

@@ -1,23 +1,22 @@
 import { Vector3 } from 'three';
 import TrackStore from './TrackStore';
 
-enum TrackDirection {
+export enum TrackDirection {
   NORTH,
   WEST,
   SOUTH,
   EAST,
 }
 
-enum TrackAngle {
+export enum TrackAngle {
   STRAIGHT,
   UP,
   DOWN,
 }
 
-enum TrackVariation {
-  FORWARD_STRAIGHT,
-  FORWARD_UP,
-  FORWARD_DOWN,
+export enum TrackVariation {
+  EMPTY,
+  FORWARD,
   TURN_LEFT,
   TURN_RIGHT,
 }
@@ -32,6 +31,8 @@ export type TrackType = {
   variation: TrackVariation;
   isPartial: boolean;
 };
+
+export type TrackBlockType = { id: number; worldPosition: Vector3; direction: TrackDirectionType; track: TrackType };
 
 class Track {
   private store: TrackStore;
@@ -48,11 +49,12 @@ class Track {
     return this.store.getBlock(query);
   }
 
-  public setBlock(block: { id: number; worldPosition: Vector3; direction: TrackDirectionType; track: TrackType }) {
+  public setBlock(block: TrackBlockType) {
     return this.store.setBlock(block);
   }
 }
 
 const track = new Track();
+track.init(512);
 
 export { track };
