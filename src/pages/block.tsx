@@ -12,7 +12,7 @@ import {
 import { Canvas, extend, useThree } from '@react-three/fiber';
 import type { NextPage } from 'next';
 import { BoxGeometry, BufferAttribute, BufferGeometry, OrthographicCamera } from 'three';
-import { getMeasurements } from '../utils/worldUtils';
+
 import {
   BlockType,
   blockVertexTable,
