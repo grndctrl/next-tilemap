@@ -25,12 +25,18 @@ const colors = {
 
 export const config = {
   default: {
-    default: '#93f1e1',
+    default: '#93f1f0',
     glow: '#1BFFD9',
     active: ' #fff7e4',
     activeGlow: '#ffcc92',
     // active: ' #ffa131',
     // activeGlow: '#ff370b',
+  },
+  warning: {
+    default: '#a5fff0',
+    glow: '#1BFFD9',
+    active: ' #ffa131',
+    activeGlow: '#ff370b',
   },
   danger: {
     default: '#a5fff0',

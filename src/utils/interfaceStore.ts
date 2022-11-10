@@ -5,7 +5,7 @@ import create from 'zustand/vanilla';
 // import { DirectionAngle } from '../components/Road';
 import { BlockType } from './blockUtils';
 import { UISelection } from './interfaceUtils';
-import { TrackAngle, TrackVariation } from 'core/Track';
+import { TrackAngle, TrackBlockType, TrackVariation } from 'core/Track';
 
 type InterfaceStore = {
   blockHovered: {
@@ -50,6 +50,10 @@ type InterfaceStore = {
   };
 
   setTrackSettings: (settings: { angle?: TrackAngle; variation?: TrackVariation }) => void;
+
+  nextTrackBlock: TrackBlockType | null;
+
+  setNextTrackBlock: (nextTrackBlock: TrackBlockType | null) => void;
 };
 
 const interfaceStore = create<InterfaceStore>()(
@@ -84,6 +88,12 @@ const interfaceStore = create<InterfaceStore>()(
         const variation = settings.variation !== undefined ? settings.variation : get().trackSettings.variation;
 
         set(() => ({ trackSettings: { angle, variation } }));
+      },
+
+      nextTrackBlock: null,
+
+      setNextTrackBlock: (nextTrackBlock) => {
+        set(() => ({ nextTrackBlock }));
       },
     }),
     { name: 'Interface store' }

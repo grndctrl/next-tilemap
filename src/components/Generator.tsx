@@ -1,9 +1,9 @@
 import { animated } from '@react-spring/web';
 import Heightmap from 'components/Heightmap';
-import Button from 'components/UserInterface/Button';
-import InputRange from 'components/UserInterface/InputRange';
-import InputText from 'components/UserInterface/InputText';
-import Progress from 'components/UserInterface/Progress';
+import Button from 'ui/Button';
+import InputRange from 'ui/InputRange';
+import InputText from 'ui/InputText';
+import Progress from 'ui/Progress';
 import { useWorldGenerator } from 'core/World';
 import { WorldGeneratorState } from 'core/World/hooks';
 import type { NextPage } from 'next';
@@ -20,10 +20,7 @@ const Generator = () => {
 
   const { state, init, progress } = useWorldGenerator();
 
-  const [seed, setSeed] = useState<string>(
-    // Math.random().toString().slice(2, 10)
-    '0'
-  );
+  const [seed, setSeed] = useState<string>(Math.random().toString().slice(2, 10));
   const [size, setSize] = useState<number>(1);
   const [resolution, setResolution] = useState<number>(0.075);
   const [height, setHeight] = useState<number>(1);
@@ -72,7 +69,8 @@ const Generator = () => {
   };
 
   return (
-    <div className="flex flex-col text-sm w-[400px] lg:text-lg bg-slate-800">
+    <div className="relative flex flex-col text-sm w-[400px] lg:text-lg ui-crt">
+      {/* <div className="absolute inset-0 z-10 pointer-events-none crt"></div> */}
       <div className="w-full p-8">
         {state === WorldGeneratorState.WAITING && (
           <>
@@ -80,10 +78,10 @@ const Generator = () => {
               <Heightmap tiles={heightmap} blocksInWorld={blocksInWorld.current} />
             </div>
             <div className="flex my-4">
-              {<InputText value={seed} onChange={handleSeedChange} />}
+              <div className="w-full mr-4">{<InputText value={seed} onChange={handleSeedChange} />}</div>
 
-              <Button colors={config.button.yellow} onClick={handleRandomizeClick}>
-                randomize
+              <Button colors={config.warning} onClick={handleRandomizeClick}>
+                RNDM
               </Button>
             </div>
             <div className="relative my-4">
@@ -93,8 +91,8 @@ const Generator = () => {
               <InputRange value={resolution} min={0.025} max={0.075} step={0.025} onChange={handleResolutionChange} />
             </div>
             <div className="relative mt-4">
-              <Button colors={config.button.yellow} onClick={handleClick}>
-                generate world
+              <Button colors={config.success} onClick={handleClick}>
+                GENERATE
               </Button>
             </div>
           </>

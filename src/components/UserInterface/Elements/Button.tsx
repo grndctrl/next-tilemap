@@ -1,5 +1,4 @@
-import { ReactNode, useState } from 'react';
-import { useSpring, animated } from 'react-spring';
+import { ReactNode, useEffect, useState } from 'react';
 import { config } from 'utils/colors';
 
 type ButtonProps = {
@@ -17,44 +16,43 @@ const Button = ({ onClick, children, colors = config.default }: ButtonProps) => 
   const [isPointerOver, togglePointerOver] = useState<boolean>(false);
   const [isActive, toggleActive] = useState<boolean>(false);
 
-  const { color, background, opacity } = useSpring({
-    color: isPointerOver ? colors.active : colors.default,
-    background: isPointerOver ? colors.activeGlow : colors.glow,
-    opacity: isActive ? 1 : 0,
-    config: { mass: 1, tension: 400, friction: 10, clamp: true },
-  });
-
   return (
-    <animated.div
+    <div
       onClick={onClick}
       onPointerDown={() => toggleActive(true)}
       onPointerUp={() => toggleActive(false)}
       onPointerEnter={() => togglePointerOver(true)}
       onPointerLeave={() => togglePointerOver(false)}
-      className="relative h-12 p-3 glow"
-      style={{ color: background }}
+      className="relative h-12 p-3 ui-element"
+      style={{ color: isActive || isPointerOver ? colors.activeGlow : colors.glow }}
     >
-      <div className="absolute inset-0 border border-current" style={{ opacity: isActive ? 0 : 1 }}></div>
-      <animated.div className="relative " style={{ color }}>
+      <div
+        className="absolute inset-0 border border-current"
+        style={{ opacity: isActive ? 0 : 1, color: isActive || isPointerOver ? colors.active : colors.default }}
+      ></div>
+      <div
+        className="relative text-center"
+        style={{ color: isActive || isPointerOver ? colors.active : colors.default }}
+      >
         {children}
-      </animated.div>
+      </div>
 
-      <animated.div
+      <div
         className="absolute inset-0 border-4 border-current border-r-transparent border-l-transparent"
-        style={{ color }}
-      ></animated.div>
+        style={{ color: isActive || isPointerOver ? colors.active : colors.default }}
+      ></div>
 
-      <animated.div style={{ opacity }}>
-        <animated.div
+      <div style={{ opacity: isActive ? 1 : 0 }}>
+        <div
           className="absolute top-0 left-0 right-0 border-4 border-current h-1/2 border-b-transparent"
-          style={{ color }}
-        ></animated.div>
-        <animated.div
+          style={{ color: isActive || isPointerOver ? colors.active : colors.default }}
+        ></div>
+        <div
           className="absolute bottom-0 left-0 right-0 border-4 border-current h-1/2 border-t-transparent"
-          style={{ color }}
-        ></animated.div>
-      </animated.div>
-    </animated.div>
+          style={{ color: isActive || isPointerOver ? colors.active : colors.default }}
+        ></div>
+      </div>
+    </div>
   );
 };
 

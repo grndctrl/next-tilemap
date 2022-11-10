@@ -36,7 +36,7 @@ const AddTrack = ({ block }: AddTrackProps) => {
           angle: TrackAngle.STRAIGHT,
         },
         track: {
-          variation: TrackVariation.FORWARD_STRAIGHT,
+          variation: TrackVariation.FORWARD,
           isPartial: false,
         },
       };
@@ -47,7 +47,7 @@ const AddTrack = ({ block }: AddTrackProps) => {
     }
   }, [leftButton, position]);
 
-  return <TrackModel variation={TrackVariation.FORWARD_STRAIGHT} position={position} scale={10} />;
+  return <TrackModel variation={TrackVariation.FORWARD} angle={TrackAngle.STRAIGHT} position={position} scale={10} />;
 };
 
 export default AddTrack;

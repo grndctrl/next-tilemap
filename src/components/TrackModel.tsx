@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import React, { useRef } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { GLTF } from 'three-stdlib';
-import { TrackVariation } from 'core/Track';
+import { TrackAngle, TrackVariation } from 'core/Track';
 
 type GLTFResult = GLTF & {
   nodes: {
@@ -21,36 +21,37 @@ type GLTFResult = GLTF & {
 
 type TrackModelProps = JSX.IntrinsicElements['group'] & {
   variation: TrackVariation;
+  angle: TrackAngle;
   color?: 'white' | 'orange';
 };
 
-export function TrackModel({ variation, color = 'white', ...props }: TrackModelProps) {
+export function TrackModel({ variation, angle, color = 'white', ...props }: TrackModelProps) {
   // @ts-ignore
   const { nodes, materials } = useGLTF('/roads.glb') as GLTFResult;
 
   return (
     <group {...props} dispose={null} scale={10}>
-      {variation === TrackVariation.FORWARD_STRAIGHT && (
+      {variation === TrackVariation.FORWARD && angle === TrackAngle.STRAIGHT && (
         <mesh geometry={nodes.RoadForward.geometry} material={nodes.RoadForward.material}>
           <meshStandardMaterial color={color === 'orange' ? '#f97316' : color} />
         </mesh>
       )}
-      {variation === TrackVariation.TURN_LEFT && (
+      {variation === TrackVariation.TURN_LEFT && angle === TrackAngle.STRAIGHT && (
         <mesh geometry={nodes.RoadTurnLeft.geometry} material={nodes.RoadTurnLeft.material}>
           <meshStandardMaterial color={color === 'orange' ? '#f97316' : color} />
         </mesh>
       )}
-      {variation === TrackVariation.FORWARD_DOWN && (
+      {variation === TrackVariation.FORWARD && angle === TrackAngle.DOWN && (
         <mesh geometry={nodes.RoadForwardDownward.geometry} material={nodes.RoadForwardDownward.material}>
           <meshStandardMaterial color={color === 'orange' ? '#f97316' : color} />
         </mesh>
       )}
-      {variation === TrackVariation.FORWARD_UP && (
+      {variation === TrackVariation.FORWARD && angle === TrackAngle.UP && (
         <mesh geometry={nodes.RoadForwardUpward.geometry} material={nodes.RoadForwardUpward.material}>
           <meshStandardMaterial color={color === 'orange' ? '#f97316' : color} />
         </mesh>
       )}
-      {variation === TrackVariation.TURN_RIGHT && (
+      {variation === TrackVariation.TURN_RIGHT && angle === TrackAngle.STRAIGHT && (
         <mesh geometry={nodes.RoadTurnRight.geometry} material={nodes.RoadTurnRight.material}>
           <meshStandardMaterial color={color === 'orange' ? '#f97316' : color} />
         </mesh>

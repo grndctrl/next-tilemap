@@ -7,7 +7,7 @@ type DangerStripesProps = {
 
 const DangerStripes = ({ colors = { default: ' #FF1B63', glow: '#FF1B2B' } }: DangerStripesProps) => {
   return (
-    <div className="flex glow" style={{ color: colors.glow }}>
+    <div className="flex ui-element" style={{ color: colors.glow }}>
       <div
         className="w-1 h-1 border-4 border-current border-l-transparent border-t-transparent"
         style={{ color: colors.default }}
