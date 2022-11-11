@@ -8,7 +8,6 @@ import Toggle from 'ui/Toggle';
 import { useTrack } from 'core/Track/hooks';
 import EditTrackModal from './EditTrackModal';
 import Button from 'ui/Button';
-import lzwCompress from 'lzwcompress';
 
 const UserInterface = () => {
   const { currUISelection, setCurrUISelection } = useInterfaceStore();
