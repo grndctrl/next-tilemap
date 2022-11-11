@@ -52,6 +52,10 @@ class Track {
   public setBlock(block: TrackBlockType) {
     return this.store.setBlock(block);
   }
+
+  public exportJSON() {
+    return this.store.exportJSON();
+  }
 }
 
 const track = new Track();

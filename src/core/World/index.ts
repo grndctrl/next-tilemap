@@ -1,20 +1,15 @@
-import { Vector3 } from "three";
-import { calcTableIndex, getVerticesForTableIndex } from "utils/blockUtils";
-import { calcChunkWorldPositionForIndex } from "utils/chunkUtils";
+import { Vector3 } from 'three';
+import { calcTableIndex, getVerticesForTableIndex } from 'utils/blockUtils';
+import { calcChunkWorldPositionForIndex } from 'utils/chunkUtils';
 
-import {
-  blocksInChunk,
-  blockSize,
-  chunkSize,
-  totalBlocksInChunk,
-} from "utils/constants";
+import { blocksInChunk, blockSize, chunkSize, totalBlocksInChunk } from 'utils/constants';
 import {
   calcTableIndexForNeighboursFirstIteration,
   calcTableIndexForNeighboursSecondIteration,
-} from "utils/worldUtils";
-import Chunk from "./Chunk";
-import { useWorld, useWorldGenerator } from "./hooks";
-import WorldStore from "./WorldStore";
+} from 'utils/worldUtils';
+import Chunk from './Chunk';
+import { useWorld, useWorldGenerator } from './hooks';
+import WorldStore from './WorldStore';
 
 export interface GetBlock {
   (query: number | Vector3): {
@@ -97,10 +92,7 @@ class World {
 
   public generateChunk(index: number): Promise<Chunk> {
     return new Promise((resolve, reject) => {
-      const origin = calcChunkWorldPositionForIndex(
-        index,
-        this.measurements.chunksInWorld
-      );
+      const origin = calcChunkWorldPositionForIndex(index, this.measurements.chunksInWorld);
 
       const chunk = new Chunk(index, origin, this.measurements, this.store);
       chunk.init();
@@ -111,10 +103,7 @@ class World {
 
   public generateChunkFromTableIndices(index: number, tableIndices: number[]) {
     return new Promise<Chunk>((resolve, reject) => {
-      const origin = calcChunkWorldPositionForIndex(
-        index,
-        this.measurements.chunksInWorld
-      );
+      const origin = calcChunkWorldPositionForIndex(index, this.measurements.chunksInWorld);
 
       const chunk = new Chunk(index, origin, this.measurements, this.store);
       chunk.initFromTableIndices(tableIndices);
@@ -125,8 +114,7 @@ class World {
 
   public modifyChunk(index: number, firstIteration: boolean = true) {
     return new Promise<string>((resolve, reject) => {
-      if (index < 0 || index > this.chunks.length - 1)
-        reject("chunk index does not exist");
+      if (index < 0 || index > this.chunks.length - 1) reject('chunk index does not exist');
 
       const chunk = this.chunks[index];
 
@@ -157,10 +145,7 @@ class World {
           tableIndex = calcTableIndexForNeighboursFirstIteration(neighbours);
         } else {
           if (neighbours[5] > 6798) continue;
-          tableIndex = calcTableIndexForNeighboursSecondIteration(
-            tableIndex,
-            neighbours
-          );
+          tableIndex = calcTableIndexForNeighboursSecondIteration(tableIndex, neighbours);
         }
 
         block.vertices = getVerticesForTableIndex(tableIndex);
@@ -168,7 +153,7 @@ class World {
         this.store.setBlock(block);
       }
 
-      resolve("completed modification");
+      resolve('completed modification');
     });
   }
 
@@ -186,6 +171,12 @@ class World {
     vertices: boolean[];
   }) {
     return this.store.setBlock(block);
+  }
+
+  //
+
+  public exportJSON() {
+    return this.store.exportJSON();
   }
 }
 

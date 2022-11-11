@@ -32,27 +32,37 @@ export function TrackModel({ variation, angle, color = 'white', ...props }: Trac
   return (
     <group {...props} dispose={null} scale={10}>
       {variation === TrackVariation.FORWARD && angle === TrackAngle.STRAIGHT && (
-        <mesh geometry={nodes.RoadForward.geometry} material={nodes.RoadForward.material}>
+        <mesh castShadow receiveShadow geometry={nodes.RoadForward.geometry} material={nodes.RoadForward.material}>
           <meshStandardMaterial color={color === 'orange' ? '#f97316' : color} />
         </mesh>
       )}
       {variation === TrackVariation.TURN_LEFT && angle === TrackAngle.STRAIGHT && (
-        <mesh geometry={nodes.RoadTurnLeft.geometry} material={nodes.RoadTurnLeft.material}>
+        <mesh castShadow receiveShadow geometry={nodes.RoadTurnLeft.geometry} material={nodes.RoadTurnLeft.material}>
           <meshStandardMaterial color={color === 'orange' ? '#f97316' : color} />
         </mesh>
       )}
       {variation === TrackVariation.FORWARD && angle === TrackAngle.DOWN && (
-        <mesh geometry={nodes.RoadForwardDownward.geometry} material={nodes.RoadForwardDownward.material}>
+        <mesh
+          castShadow
+          receiveShadow
+          geometry={nodes.RoadForwardDownward.geometry}
+          material={nodes.RoadForwardDownward.material}
+        >
           <meshStandardMaterial color={color === 'orange' ? '#f97316' : color} />
         </mesh>
       )}
       {variation === TrackVariation.FORWARD && angle === TrackAngle.UP && (
-        <mesh geometry={nodes.RoadForwardUpward.geometry} material={nodes.RoadForwardUpward.material}>
+        <mesh
+          castShadow
+          receiveShadow
+          geometry={nodes.RoadForwardUpward.geometry}
+          material={nodes.RoadForwardUpward.material}
+        >
           <meshStandardMaterial color={color === 'orange' ? '#f97316' : color} />
         </mesh>
       )}
       {variation === TrackVariation.TURN_RIGHT && angle === TrackAngle.STRAIGHT && (
-        <mesh geometry={nodes.RoadTurnRight.geometry} material={nodes.RoadTurnRight.material}>
+        <mesh castShadow receiveShadow geometry={nodes.RoadTurnRight.geometry} material={nodes.RoadTurnRight.material}>
           <meshStandardMaterial color={color === 'orange' ? '#f97316' : color} />
         </mesh>
       )}

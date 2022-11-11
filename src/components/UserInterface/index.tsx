@@ -7,10 +7,13 @@ import { useWorld } from 'core/World';
 import Toggle from 'ui/Toggle';
 import { useTrack } from 'core/Track/hooks';
 import EditTrackModal from './EditTrackModal';
+import Button from 'ui/Button';
+import lzwCompress from 'lzwcompress';
 
 const UserInterface = () => {
   const { currUISelection, setCurrUISelection } = useInterfaceStore();
-  const { length } = useTrack();
+  const { length, exportJSON: exportTrack } = useTrack();
+  const { exportJSON: exportWorld } = useWorld();
 
   const controls = useMouseControls();
 
@@ -30,30 +33,54 @@ const UserInterface = () => {
     setCurrUISelection(null);
   };
 
+  const handleExportClick = () => {
+    const world = exportWorld();
+    const track = exportTrack();
+
+    const json = JSON.stringify({ world, track });
+
+    const a = document.createElement('a');
+    const file = new Blob([json], { type: 'text/plain' });
+    a.href = URL.createObjectURL(file);
+    a.download = 'data.json';
+    a.click();
+    a.remove();
+  };
+
   return (
     <div className="fixed top-0 left-0 z-10 flex flex-col w-full">
-      <div className="flex justify-start w-full p-8 backdrop-blur-xl bg-slate-900 text-slate-900 bg-opacity-20 ui-crt">
-        <div className="mr-2">
-          <Toggle isActive={currUISelection === null} onClick={handleCameraClick}>
-            <MdFlipCameraAndroid className="w-6 h-6" />
-          </Toggle>
-        </div>
-        <div className="mr-2">
-          <Toggle isActive={currUISelection === UISelection.SCULPT} onClick={handleSculptClick}>
-            <MdOutlineTerrain className="w-6 h-6" />
-          </Toggle>
-        </div>
-        <div className="mr-2">
-          {length === 0 && (
-            <Toggle onClick={handleAddRoadClick} isActive={currUISelection === UISelection.ADDROAD}>
-              <MdAddRoad className="w-6 h-6" />
+      <div className="flex justify-between w-full p-8 backdrop-blur-xl bg-slate-900 text-slate-900 bg-opacity-20 ui-crt">
+        <div className="flex justify-start">
+          <div className="mr-2">
+            <Toggle isActive={currUISelection === null} onClick={handleCameraClick}>
+              <MdFlipCameraAndroid className="w-6 h-6" />
             </Toggle>
-          )}
-          {length > 0 && (
-            <Toggle onClick={handleEditRoadClick} isActive={currUISelection === UISelection.EDITROAD}>
-              <MdEditRoad className="w-6 h-6" />
+          </div>
+          <div className="mr-2">
+            <Toggle isActive={currUISelection === UISelection.SCULPT} onClick={handleSculptClick}>
+              <MdOutlineTerrain className="w-6 h-6" />
             </Toggle>
-          )}
+          </div>
+          <div className="mr-2">
+            {length === 0 && (
+              <Toggle onClick={handleAddRoadClick} isActive={currUISelection === UISelection.ADDROAD}>
+                <MdAddRoad className="w-6 h-6" />
+              </Toggle>
+            )}
+            {length > 0 && (
+              <Toggle onClick={handleEditRoadClick} isActive={currUISelection === UISelection.EDITROAD}>
+                <MdEditRoad className="w-6 h-6" />
+              </Toggle>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <div className="mr-2">
+            <Button onClick={handleExportClick}>
+              <TbPackgeExport className="w-6 h-6" />
+            </Button>
+          </div>
         </div>
       </div>
       {(currUISelection === UISelection.ADDROAD || currUISelection === UISelection.EDITROAD) && <EditTrackModal />}

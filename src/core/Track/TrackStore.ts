@@ -1,6 +1,6 @@
 import { Vector3 } from 'three';
 import createStore, { Schema, Store } from 'utils/typedArrayStore';
-import { TrackBlockType, TrackDirectionType, TrackType } from './';
+import { TrackBlockType, TrackDirectionType, TrackType, TrackVariation } from './';
 
 const worldPositionSchema: Schema = {
   x: 'Float32',
@@ -84,11 +84,15 @@ class TrackStore {
     }
 
     if (id >= 0 && id < this.maxLength) {
+      const track = this.getTrack(id);
+
+      if (track.variation === TrackVariation.EMPTY) return null;
+
       return {
-        id: id,
+        id,
         worldPosition: this.getWorldPosition(id),
         direction: this.getDirection(id),
-        track: this.getTrack(id),
+        track,
       };
     }
 
@@ -128,6 +132,24 @@ class TrackStore {
     this.setWorldPosition(id, worldPosition);
     this.setDirection(id, direction);
     this.setTrack(id, track);
+  }
+
+  //
+
+  public exportJSON() {
+    const worldPosition = (this.worldPosition = {});
+    const direction = (this.direction = {});
+    const track = (this.track = {});
+    const maxLength = (this.maxLength = 0);
+
+    const json = JSON.stringify({
+      worldPosition,
+      direction,
+      track,
+      maxLength,
+    });
+
+    return json;
   }
 }
 

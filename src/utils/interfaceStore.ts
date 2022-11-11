@@ -51,9 +51,9 @@ type InterfaceStore = {
 
   setTrackSettings: (settings: { angle?: TrackAngle; variation?: TrackVariation }) => void;
 
-  nextTrackBlock: TrackBlockType | null;
+  nextTrackBlock: TrackBlockType | 'blocked' | 'closed';
 
-  setNextTrackBlock: (nextTrackBlock: TrackBlockType | null) => void;
+  setNextTrackBlock: (nextTrackBlock: TrackBlockType | 'blocked' | 'closed') => void;
 };
 
 const interfaceStore = create<InterfaceStore>()(
@@ -90,7 +90,7 @@ const interfaceStore = create<InterfaceStore>()(
         set(() => ({ trackSettings: { angle, variation } }));
       },
 
-      nextTrackBlock: null,
+      nextTrackBlock: 'blocked',
 
       setNextTrackBlock: (nextTrackBlock) => {
         set(() => ({ nextTrackBlock }));

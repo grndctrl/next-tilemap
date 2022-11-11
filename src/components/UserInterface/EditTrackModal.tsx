@@ -1,5 +1,6 @@
 import { TrackAngle, TrackVariation } from 'core/Track';
 import { useTrack } from 'core/Track/hooks';
+import { useEffect } from 'react';
 import IconAngleDown from 'svg/IconAngleDown';
 import IconAngleStraight from 'svg/IconAngleStraight';
 import IconAngleUp from 'svg/IconAngleUp';
@@ -11,10 +12,11 @@ import DangerStripes from 'ui/DangerStripes';
 import Toggle from 'ui/Toggle';
 import { config } from 'utils/colors';
 import { useInterfaceStore } from 'utils/interfaceStore';
+import { UISelection } from 'utils/interfaceUtils';
 
 const EditTrackModal = () => {
-  const { trackSettings, setTrackSettings, nextTrackBlock } = useInterfaceStore();
-  const { length, setBlock } = useTrack();
+  const { trackSettings, setTrackSettings, nextTrackBlock, setCurrUISelection } = useInterfaceStore();
+  const { length, setBlock, deleteBlock } = useTrack();
 
   const handleVariationClick = (variation: TrackVariation) => {
     setTrackSettings({ variation });
@@ -26,15 +28,24 @@ const EditTrackModal = () => {
   };
 
   const handleAddClick = () => {
-    if (nextTrackBlock) {
-      console.log('🚀 ~ file: EditTrackModal.tsx ~ line 42 ~ nextTrackBlock', nextTrackBlock);
+    if (nextTrackBlock !== 'blocked' && nextTrackBlock !== 'closed') {
       setBlock(nextTrackBlock);
     }
   };
 
+  const handleDelClick = () => {
+    deleteBlock();
+  };
+
+  useEffect(() => {
+    if (length === 0) {
+      setCurrUISelection(UISelection.ADDROAD);
+    }
+  }, [length]);
+
   return (
     <div className="p-4 m-4 text-xl bg-opacity-20 w-[190px] backdrop-blur-xl bg-slate-900 ui-crt">
-      {length === 0 && <div>Pick start location</div>}
+      {length === 0 && <div className="text-red-500">Pick start location</div>}
       {length > 0 && (
         <div>
           <div className="flex flex-col">
@@ -62,10 +73,10 @@ const EditTrackModal = () => {
             <div className="mt-2">
               <div className="w-[158px] flex justify-between">
                 <Toggle
-                  isActive={trackSettings.angle === TrackAngle.UP}
-                  onClick={() => handleAngleClick(TrackAngle.UP)}
+                  isActive={trackSettings.angle === TrackAngle.DOWN}
+                  onClick={() => handleAngleClick(TrackAngle.DOWN)}
                 >
-                  <IconAngleUp className="block w-6 h-6" />
+                  <IconAngleDown className="block w-6 h-6" />
                 </Toggle>
                 <Toggle
                   isActive={trackSettings.angle === TrackAngle.STRAIGHT}
@@ -74,10 +85,10 @@ const EditTrackModal = () => {
                   <IconAngleStraight className="block w-6 h-6" />
                 </Toggle>
                 <Toggle
-                  isActive={trackSettings.angle === TrackAngle.DOWN}
-                  onClick={() => handleAngleClick(TrackAngle.DOWN)}
+                  isActive={trackSettings.angle === TrackAngle.UP}
+                  onClick={() => handleAngleClick(TrackAngle.UP)}
                 >
-                  <IconAngleDown className="block w-6 h-6" />
+                  <IconAngleUp className="block w-6 h-6" />
                 </Toggle>
               </div>
             </div>
@@ -86,7 +97,7 @@ const EditTrackModal = () => {
           <div className="flex justify-between w-[158px] mt-8 items-center">
             <div className="flex flex-col">
               <DangerStripes />
-              <Button onClick={() => {}} colors={config.danger}>
+              <Button onClick={handleDelClick} colors={config.danger}>
                 <span className="block text-sm">DEL</span>
               </Button>
               <DangerStripes />
@@ -95,6 +106,11 @@ const EditTrackModal = () => {
             <Button onClick={handleAddClick} colors={config.success}>
               <span className="block text-sm">ADD</span>
             </Button>
+          </div>
+
+          <div className="flex justify-center w-[158px] mt-8 items-center">
+            {nextTrackBlock === 'blocked' && <div className="text-red-500">BLOCKED</div>}
+            {nextTrackBlock === 'closed' && <div className="text-red-500">CLOSED</div>}
           </div>
         </div>
       )}

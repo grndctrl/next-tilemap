@@ -192,30 +192,23 @@ class WorldStore {
 
   //
 
-  // public exportJSON() {
-  //   const totalBlocksInChunk = this.totalBlocksInChunk;
-  //   const totalChunksInWorld = this.totalChunksInWorld;
-  //   const totalBlocksInWorld = this.totalBlocksInWorld;
+  public exportJSON() {
+    const localPosition = this.localPosition;
+    const worldPosition = this.worldPosition;
+    const vertices = this.vertices;
+    const neighbours = this.neighbours;
+    const measurements = this.measurements;
 
-  //   const localPosition = this.localPosition;
-  //   const worldPosition = this.worldPosition;
-  //   const vertices = this.vertices;
-  //   const neighbours = this.neighbours;
-  //   const chunks = this.chunks;
+    const json = JSON.stringify({
+      localPosition,
+      worldPosition,
+      vertices,
+      neighbours,
+      measurements,
+    });
 
-  //   const json = JSON.stringify({
-  //     totalBlocksInChunk,
-  //     totalChunksInWorld,
-  //     totalBlocksInWorld,
-  //     localPosition,
-  //     worldPosition,
-  //     vertices,
-  //     neighbours,
-  //     chunks,
-  //   });
-
-  //   return json;
-  // }
+    return json;
+  }
 }
 
 export default WorldStore;

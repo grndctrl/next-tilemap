@@ -285,7 +285,7 @@ const Chunk = forwardRef<Mesh, ChunkProps>(({ index, worldPosition, blocks }, re
     <group position={worldPosition}>
       {geometry && (
         <RigidBody type="fixed" colliders="trimesh">
-          <mesh ref={ref} geometry={geometry}>
+          <mesh ref={ref} geometry={geometry} receiveShadow castShadow>
             <meshStandardMaterial color={'#646464'} />
           </mesh>
         </RigidBody>

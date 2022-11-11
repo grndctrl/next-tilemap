@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { Vector3 } from 'three';
 import createHook from 'zustand';
 import create from 'zustand/vanilla';
-import { track, TrackBlockType, TrackDirectionType, TrackType } from './';
+import { track, TrackBlockType, TrackDirectionType, TrackType, TrackVariation } from './';
 
 interface TrackState {
   trackRenderKeys: number[];
@@ -53,13 +53,31 @@ const useTrack = () => {
     [setLength, updateTrackRenderKey]
   );
 
+  const deleteBlock = useCallback(() => {
+    console.log(track);
+    const block = track.getBlock(length - 1);
+
+    if (block) {
+      block.track.variation = TrackVariation.EMPTY;
+      track.setBlock(block);
+    }
+
+    setLength(length - 1);
+  }, [length, setLength]);
+
+  const exportJSON = useCallback(() => {
+    return track.exportJSON();
+  }, []);
+
   return {
     trackRenderKeys,
     resetTrackRenderKeys,
     updateTrackRenderKey,
     getBlock,
     setBlock,
+    deleteBlock,
     length,
+    exportJSON,
   };
 };
 

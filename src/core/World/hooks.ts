@@ -214,6 +214,10 @@ const useWorld = () => {
     [updateChunkRenderKey]
   );
 
+  const exportJSON = useCallback(() => {
+    return world.exportJSON();
+  }, []);
+
   return {
     chunks,
     getBlock,
@@ -221,6 +225,7 @@ const useWorld = () => {
     setBlocks,
     chunkRenderKeys,
     updateChunkRenderKey,
+    exportJSON,
     measurements,
   };
 };

@@ -15,7 +15,7 @@ function Scene() {
   camera.far = 1000;
 
   return (
-    <Canvas gl={{ antialias: false }} dpr={2} camera={camera}>
+    <Canvas gl={{ antialias: false }} dpr={2} camera={camera} shadows>
       <Lighting />
       <Controls />
       <SceneInterface />

@@ -4,7 +4,7 @@ import { blockSize } from './constants';
 import { BlockType } from './blockUtils';
 import { TrackAngle, TrackBlockType, TrackDirection, TrackVariation } from 'core/Track';
 
-const getNextTrackBlock = (
+const getNextBlock = (
   getBlock: GetBlock,
   lastBlock: TrackBlockType,
   trackSettings: { variation: TrackVariation; angle: TrackAngle }
@@ -37,4 +37,4 @@ const getNextTrackBlock = (
   return getBlock(nextPosition);
 };
 
-export { getNextTrackBlock };
+export { getNextBlock };
