@@ -1,4 +1,4 @@
-import { TrackModel } from 'components/TrackModel';
+import { TrackModel } from 'models/TrackModel';
 import { TrackAngle, TrackBlockType, TrackDirection, TrackVariation } from 'core/Track';
 import { useTrack } from 'core/Track/hooks';
 import { useMouseControls } from 'hooks/mouseControls';
@@ -9,11 +9,11 @@ import { blockSize } from 'utils/constants';
 import { useInterfaceStore } from 'utils/interfaceStore';
 import { UISelection } from 'utils/interfaceUtils';
 
-type AddTrackProps = {
+type AddTrackBlockProps = {
   block: BlockType;
 };
 
-const AddTrack = ({ block }: AddTrackProps) => {
+const AddTrackBlock = ({ block }: AddTrackBlockProps) => {
   const position = useMemo(
     () => block.worldPosition.clone().add(new Vector3(0, blockSize.y, 0)),
     [block.worldPosition]
@@ -50,4 +50,4 @@ const AddTrack = ({ block }: AddTrackProps) => {
   return <TrackModel variation={TrackVariation.FORWARD} angle={TrackAngle.STRAIGHT} position={position} scale={10} />;
 };
 
-export default AddTrack;
+export default AddTrackBlock;

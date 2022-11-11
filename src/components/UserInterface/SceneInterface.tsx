@@ -6,7 +6,7 @@ import { useInterfaceStore } from '../../utils/interfaceStore';
 import { UISelection } from '../../utils/interfaceUtils';
 import Mutator from './Mutator';
 import Indicator from './Indicator';
-import AddTrack from './AddTrack';
+import AddTrackBlock from './AddTrackBlock';
 
 const SceneInterface = () => {
   const { blockHovered, blockMutated, setBlockMutated, currUISelection } = useInterfaceStore();
@@ -34,7 +34,7 @@ const SceneInterface = () => {
         <Indicator {...blockHovered} showVertex={currUISelection === UISelection.SCULPT} />
       )}
       {currUISelection === UISelection.SCULPT && blockMutated && <Mutator {...blockMutated} />}
-      {currUISelection === UISelection.ADDROAD && blockHovered && <AddTrack block={blockHovered.block} />}
+      {currUISelection === UISelection.ADDROAD && blockHovered && <AddTrackBlock block={blockHovered.block} />}
     </group>
   );
 };

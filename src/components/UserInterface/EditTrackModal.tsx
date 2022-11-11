@@ -1,28 +1,16 @@
-import IconAngleDown from 'assets/IconAngleDown';
-import IconAngleStraight from 'assets/IconAngleStraight';
-import IconAngleUp from 'assets/IconAngleUp';
-import IconVariationTurnLeft from 'assets/IconVariationTurnLeft';
-import IconVariationTurnRight from 'assets/IconVariationTurnRight';
-import IconVariationForward from 'assets/IconVariationForward';
 import { TrackAngle, TrackVariation } from 'core/Track';
 import { useTrack } from 'core/Track/hooks';
-import {
-  FiCornerUpLeft,
-  FiCornerUpRight,
-  FiArrowUp,
-  FiArrowDownRight,
-  FiArrowRight,
-  FiArrowUpRight,
-  FiPlusSquare,
-  FiMinusSquare,
-} from 'react-icons/fi';
-import { useInterfaceStore } from 'utils/interfaceStore';
-
+import IconAngleDown from 'svg/IconAngleDown';
+import IconAngleStraight from 'svg/IconAngleStraight';
+import IconAngleUp from 'svg/IconAngleUp';
+import IconVariationForward from 'svg/IconVariationForward';
+import IconVariationTurnLeft from 'svg/IconVariationTurnLeft';
+import IconVariationTurnRight from 'svg/IconVariationTurnRight';
 import Button from 'ui/Button';
-import colors, { config } from 'utils/colors';
-import Toggle from 'ui/Toggle';
-import TrackSettingsCurves from 'assets/TrackSettingsCurvesBackground';
 import DangerStripes from 'ui/DangerStripes';
+import Toggle from 'ui/Toggle';
+import { config } from 'utils/colors';
+import { useInterfaceStore } from 'utils/interfaceStore';
 
 const EditTrackModal = () => {
   const { trackSettings, setTrackSettings, nextTrackBlock } = useInterfaceStore();

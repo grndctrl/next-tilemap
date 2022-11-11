@@ -16,11 +16,8 @@
     "incremental": true,
     "baseUrl": "src",
     "paths": {
-      "components/*": ["components/*"],
-      "core/*": ["core/*"],
-      "hooks/*": ["hooks/*"],
-      "utils/*": ["utils/*"],
-      "components/UserInterface/Elements/*": ["ui/*"],
+      "svg/*": ["assets/svg/*"],
+      "models/*": ["assets/models/*"],
       "ui/*": ["components/UserInterface/Elements/*"]
     }
   },

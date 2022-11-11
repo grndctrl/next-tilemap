@@ -4,7 +4,7 @@ import { OrthographicCamera } from 'three';
 import Controls from './Controls';
 import SceneInterface from './UserInterface/SceneInterface';
 import World from './World';
-import TrackBlock from './TrackBlock';
+import Track from './Track';
 
 function Scene() {
   const camera = new OrthographicCamera();
@@ -20,7 +20,7 @@ function Scene() {
       <Controls />
       <SceneInterface />
       <World />
-      <TrackBlock />
+      <Track />
     </Canvas>
   );
 }
