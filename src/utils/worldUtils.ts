@@ -1,6 +1,10 @@
 import alea from "alea";
+import { WorldMeasurements, GetBlock } from "core/World";
 import { createNoise2D } from "simplex-noise";
 import { Vector3 } from "three";
+import { calcWorldPositionFromArrayPosition } from "utils/chunkUtils";
+import { calcTableIndex } from "utils/blockUtils";
+import { blocksInChunk } from "utils/constants";
 
 //
 
@@ -89,10 +93,90 @@ const convert2DHeightmapTo3DTableIndices = (
     }
   }
 
-  console.log(
-    "🚀 ~ file: worldUtils.ts ~ line 246 ~ tableIndices",
-    tableIndices
-  );
+  return tableIndices;
+};
+
+//
+
+const decompressWorldToTableIndices = (
+  compressedWorld: number[][][],
+  blocksInWorld: Vector3
+) => {
+  const totalBlocksInWorld =
+    blocksInWorld.x * blocksInWorld.y * blocksInWorld.z;
+  const tableIndices = Array.from({ length: totalBlocksInWorld }).map(() => 0);
+
+  return new Promise<number[]>((resolve) => {
+    for (let z = 0; z < blocksInWorld.z; z++) {
+      for (let x = 0; x < blocksInWorld.x; x++) {
+        const tableIndexStack = compressedWorld[x + z * blocksInWorld.x];
+
+        const height = tableIndexStack[0][0];
+
+        for (let y = 0; y < height; y++) {
+          const index =
+            x + z * blocksInWorld.x + y * blocksInWorld.x * blocksInWorld.z;
+
+          tableIndices[index] = 16383;
+        }
+
+        for (let i = 0; i < tableIndexStack.length; i++) {
+          const y = tableIndexStack[i][0];
+          const tableIndex = tableIndexStack[i][1];
+          const index =
+            x + z * blocksInWorld.x + y * blocksInWorld.x * blocksInWorld.z;
+
+          tableIndices[index] = tableIndex;
+        }
+      }
+    }
+
+    resolve(tableIndices);
+  });
+};
+
+//
+
+const compressWorld = (measurements: WorldMeasurements, getBlock: GetBlock) => {
+  const arrayPosition = new Vector3();
+  const worldPosition = new Vector3();
+  const tableIndices: number[][][] = [];
+  let tableIndex = 0;
+
+  for (let z = 0; z < measurements.blocksInWorld.z; z++) {
+    for (let x = 0; x < measurements.blocksInWorld.x; x++) {
+      const currStack: number[][] = [];
+
+      for (let y = 0; y < measurements.blocksInWorld.y; y++) {
+        arrayPosition.set(x, y, z);
+        worldPosition.copy(
+          calcWorldPositionFromArrayPosition(
+            arrayPosition,
+            measurements.blocksInWorld
+          )
+        );
+
+        const block = getBlock(worldPosition);
+
+        if (block) {
+          tableIndex = calcTableIndex(block.vertices);
+
+          if (tableIndex !== 16383) {
+            if (tableIndex === 0) {
+              if (currStack.length === 0) {
+                currStack.push([y - 1, 16383]);
+              }
+              break;
+            }
+            currStack.push([y, tableIndex]);
+          }
+        }
+      }
+
+      tableIndices.push(currStack);
+    }
+  }
+
   return tableIndices;
 };
 
@@ -196,4 +280,6 @@ export {
   convert2DHeightmapTo3DTableIndices,
   calcTableIndexForNeighboursFirstIteration,
   calcTableIndexForNeighboursSecondIteration,
+  compressWorld,
+  decompressWorldToTableIndices,
 };

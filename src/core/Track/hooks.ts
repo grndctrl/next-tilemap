@@ -1,8 +1,8 @@
-import { useCallback } from 'react';
-import { Vector3 } from 'three';
-import createHook from 'zustand';
-import create from 'zustand/vanilla';
-import { track, TrackBlockType, TrackDirectionType, TrackType, TrackVariation } from './';
+import { useCallback } from "react";
+import { Vector3 } from "three";
+import createHook from "zustand";
+import create from "zustand/vanilla";
+import { track, TrackBlockType, TrackJSON, TrackVariation } from "./";
 
 interface TrackState {
   trackRenderKeys: number[];
@@ -39,10 +39,53 @@ const globalStore = create<TrackState>()((set, get) => ({
 
 const useGlobalStore = createHook(globalStore);
 
-const useTrack = () => {
-  const { trackRenderKeys, resetTrackRenderKeys, updateTrackRenderKey, length, setLength } = useGlobalStore();
+const useTrackGenerator = () => {
+  const { resetTrackRenderKeys, setLength } = useGlobalStore();
 
-  const getBlock = useCallback((query: number | Vector3) => track.getBlock(query), []);
+  const initFromJSON = (data: TrackJSON) => {
+    track.init();
+
+    for (let i = 0; i < data.length; i++) {
+      const block: TrackBlockType = {
+        id: i,
+        worldPosition: new Vector3(
+          data.worldPosition.x[i],
+          data.worldPosition.y[i],
+          data.worldPosition.z[i]
+        ),
+        direction: {
+          from: data.direction.from[i],
+          to: data.direction.to[i],
+          angle: data.direction.angle[i],
+        },
+        track: {
+          variation: data.track.variation[i],
+          isPartial: data.track.isPartial[i] === 1,
+        },
+      };
+
+      track.setBlock(block);
+    }
+    setLength(data.length);
+    resetTrackRenderKeys(data.maxLength);
+  };
+
+  return { initFromJSON };
+};
+
+const useTrack = () => {
+  const {
+    trackRenderKeys,
+    resetTrackRenderKeys,
+    updateTrackRenderKey,
+    length,
+    setLength,
+  } = useGlobalStore();
+
+  const getBlock = useCallback(
+    (query: number | Vector3) => track.getBlock(query),
+    []
+  );
 
   const setBlock = useCallback(
     (block: TrackBlockType) => {
@@ -81,4 +124,4 @@ const useTrack = () => {
   };
 };
 
-export { useTrack };
+export { useTrack, useTrackGenerator };

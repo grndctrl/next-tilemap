@@ -1,9 +1,26 @@
-import { ThreeEvent, useFrame } from '@react-three/fiber';
-import { RigidBody } from '@react-three/rapier';
-import { remove } from 'lodash';
-import { forwardRef, memo, RefObject, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { BufferAttribute, BufferGeometry, Intersection, Mesh, Object3D, Raycaster, Vector3 } from 'three';
-import { mergeBufferGeometries } from 'three-stdlib';
+import { ThreeEvent, useFrame } from "@react-three/fiber";
+import { RigidBody } from "@react-three/rapier";
+import { remove } from "lodash";
+import {
+  forwardRef,
+  memo,
+  RefObject,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
+import {
+  BufferAttribute,
+  BufferGeometry,
+  Intersection,
+  Mesh,
+  Object3D,
+  Raycaster,
+  Vector3,
+} from "three";
+import { mergeBufferGeometries, mergeVertices } from "three-stdlib";
 import {
   BlockType,
   blockVertexTable,
@@ -11,10 +28,10 @@ import {
   geometryFromTriangles,
   getSideTriangles,
   getTopTriangles,
-} from '../utils/blockUtils';
-import { useInterfaceStore } from '../utils/interfaceStore';
-import { colors } from '../utils/tailwindDefaults';
-import { useWorld } from 'core/World';
+} from "../utils/blockUtils";
+import { useInterfaceStore } from "../utils/interfaceStore";
+import { colors } from "../utils/tailwindDefaults";
+import { useWorld } from "core/World";
 
 type ChunkProps = {
   index: number;
@@ -28,7 +45,9 @@ type ChunkType = {
   blocks: number[];
 };
 
-const getNeighbourVerticesForNeighboursInBlocks = (neighbours: (BlockType | null)[]): boolean[] => {
+const getNeighbourVerticesForNeighboursInBlocks = (
+  neighbours: (BlockType | null)[]
+): boolean[] => {
   const currentNeighbourVertices: boolean[] = [];
 
   // left 0 2 4 6 8
@@ -116,184 +135,223 @@ export type ChunkRef = {
   mesh: RefObject<Mesh>;
 };
 
-const Chunk = forwardRef<Mesh, ChunkProps>(({ index, worldPosition, blocks }, ref) => {
-  const [blockGeometries, setBlockGeometries] = useState<(BufferGeometry | null)[]>([]);
+const Chunk = forwardRef<Mesh, ChunkProps>(
+  ({ index, worldPosition, blocks }, ref) => {
+    const [blockGeometries, setBlockGeometries] = useState<
+      (BufferGeometry | null)[]
+    >([]);
 
-  const [geometry, setGeometry] = useState<BufferGeometry | null>(null);
-  const mesh = useRef<Mesh>(null);
+    const [geometry, setGeometry] = useState<BufferGeometry | null>(null);
+    const mesh = useRef<Mesh>(null);
 
-  const { setBlockHovered } = useInterfaceStore();
-  const { getBlock, chunkRenderKeys } = useWorld();
-  const renderKey = chunkRenderKeys[index];
+    const { setBlockHovered } = useInterfaceStore();
+    const { getBlock, chunkRenderKeys } = useWorld();
+    const renderKey = chunkRenderKeys[index];
 
-  useEffect(() => {
-    console.log('chunkRenderKeys', chunkRenderKeys);
-  }, [chunkRenderKeys]);
-  // useImperativeHandle(ref, () => ({
-  //   mesh,
-  // }));
+    useEffect(() => {
+      console.log("chunkRenderKeys", chunkRenderKeys);
+    }, [chunkRenderKeys]);
+    // useImperativeHandle(ref, () => ({
+    //   mesh,
+    // }));
 
-  const generateBlockGeometry = useCallback(
-    ({ id, neighbours, vertices }: BlockType) => {
-      const neighbourBlocks = neighbours.map((neighbour) => (neighbour > -1 ? getBlock(neighbour) : null));
-      const neighbourVertices: boolean[] = getNeighbourVerticesForNeighboursInBlocks(neighbourBlocks);
-      let hoverGeometry = null;
-      let blockGeometry = null;
-
-      const topTriangles = getTopTriangles(vertices, [
-        neighbourVertices[25],
-        neighbourVertices[26],
-        neighbourVertices[27],
-        neighbourVertices[28],
-        neighbourVertices[29],
-      ]);
-
-      if (topTriangles) {
-        const leftTriangles = getSideTriangles(
-          [0, 2, 4, 6, 8],
-          [vertices[0], vertices[2], vertices[4], vertices[6], vertices[8]],
-          [neighbourVertices[0], neighbourVertices[1], neighbourVertices[2], neighbourVertices[3], neighbourVertices[4]]
+    const generateBlockGeometry = useCallback(
+      ({ id, neighbours, vertices }: BlockType) => {
+        const neighbourBlocks = neighbours.map((neighbour) =>
+          neighbour > -1 ? getBlock(neighbour) : null
         );
+        const neighbourVertices: boolean[] =
+          getNeighbourVerticesForNeighboursInBlocks(neighbourBlocks);
+        let hoverGeometry = null;
+        let blockGeometry = null;
 
-        const rightTriangles = getSideTriangles(
-          [3, 1, 7, 5, 9],
-          [vertices[3], vertices[1], vertices[7], vertices[5], vertices[9]],
-          [neighbourVertices[5], neighbourVertices[6], neighbourVertices[7], neighbourVertices[8], neighbourVertices[9]]
-        );
+        const topTriangles = getTopTriangles(vertices, [
+          neighbourVertices[25],
+          neighbourVertices[26],
+          neighbourVertices[27],
+          neighbourVertices[28],
+          neighbourVertices[29],
+        ]);
 
-        const backTriangles = getSideTriangles(
-          [1, 0, 5, 4, 10],
-          [vertices[1], vertices[0], vertices[5], vertices[4], vertices[10]],
-          [
-            neighbourVertices[10],
-            neighbourVertices[11],
-            neighbourVertices[12],
-            neighbourVertices[13],
-            neighbourVertices[14],
-          ]
-        );
+        if (topTriangles) {
+          const leftTriangles = getSideTriangles(
+            [0, 2, 4, 6, 8],
+            [vertices[0], vertices[2], vertices[4], vertices[6], vertices[8]],
+            [
+              neighbourVertices[0],
+              neighbourVertices[1],
+              neighbourVertices[2],
+              neighbourVertices[3],
+              neighbourVertices[4],
+            ]
+          );
 
-        const frontTriangles = getSideTriangles(
-          [2, 3, 6, 7, 11],
-          [vertices[2], vertices[3], vertices[6], vertices[7], vertices[11]],
-          [
-            neighbourVertices[15],
-            neighbourVertices[16],
-            neighbourVertices[17],
-            neighbourVertices[18],
-            neighbourVertices[19],
-          ]
-        );
+          const rightTriangles = getSideTriangles(
+            [3, 1, 7, 5, 9],
+            [vertices[3], vertices[1], vertices[7], vertices[5], vertices[9]],
+            [
+              neighbourVertices[5],
+              neighbourVertices[6],
+              neighbourVertices[7],
+              neighbourVertices[8],
+              neighbourVertices[9],
+            ]
+          );
 
-        const triangles = topTriangles
-          .concat(leftTriangles)
-          .concat(rightTriangles)
-          .concat(backTriangles)
-          .concat(frontTriangles);
+          const backTriangles = getSideTriangles(
+            [1, 0, 5, 4, 10],
+            [vertices[1], vertices[0], vertices[5], vertices[4], vertices[10]],
+            [
+              neighbourVertices[10],
+              neighbourVertices[11],
+              neighbourVertices[12],
+              neighbourVertices[13],
+              neighbourVertices[14],
+            ]
+          );
 
-        if (topTriangles.length > 0) {
-          hoverGeometry = geometryFromTriangles(topTriangles);
+          const frontTriangles = getSideTriangles(
+            [2, 3, 6, 7, 11],
+            [vertices[2], vertices[3], vertices[6], vertices[7], vertices[11]],
+            [
+              neighbourVertices[15],
+              neighbourVertices[16],
+              neighbourVertices[17],
+              neighbourVertices[18],
+              neighbourVertices[19],
+            ]
+          );
 
-          if (hoverGeometry) {
-            // TODO: does this need to be that long / every position?
-            const idArray = new Int32Array(
-              Array.from({ length: hoverGeometry.getAttribute('position').array.length / 3 }).map(() => id)
-            );
+          const triangles = topTriangles
+            .concat(leftTriangles)
+            .concat(rightTriangles)
+            .concat(backTriangles)
+            .concat(frontTriangles);
 
-            const idAttribute = new BufferAttribute(idArray, 1);
-            hoverGeometry.setAttribute('id', idAttribute);
+          if (topTriangles.length > 0) {
+            hoverGeometry = geometryFromTriangles(topTriangles);
+
+            if (hoverGeometry) {
+              // TODO: does this need to be that long / every position?
+              const idArray = new Int32Array(
+                Array.from({
+                  length:
+                    hoverGeometry.getAttribute("position").array.length / 3,
+                }).map(() => id)
+              );
+
+              const idAttribute = new BufferAttribute(idArray, 1);
+              hoverGeometry.setAttribute("id", idAttribute);
+            }
+          }
+
+          if (triangles.length > 0) {
+            blockGeometry = geometryFromTriangles(triangles);
+
+            if (blockGeometry) {
+              // TODO: does this need to be that long / every position?
+              const idArray = new Int32Array(
+                Array.from({
+                  length:
+                    blockGeometry.getAttribute("position").array.length / 3,
+                }).map(() => id)
+              );
+
+              const idAttribute = new BufferAttribute(idArray, 1);
+              blockGeometry.setAttribute("id", idAttribute);
+            }
           }
         }
 
-        if (triangles.length > 0) {
-          blockGeometry = geometryFromTriangles(triangles);
+        return { hoverGeometry, blockGeometry };
+      },
+      [getBlock]
+    );
 
-          if (blockGeometry) {
-            // TODO: does this need to be that long / every position?
-            const idArray = new Int32Array(
-              Array.from({ length: blockGeometry.getAttribute('position').array.length / 3 }).map(() => id)
-            );
+    const generateChunkGeometry = useCallback(
+      (blocks: number[]) => {
+        const geometries: BufferGeometry[] = [];
 
-            const idAttribute = new BufferAttribute(idArray, 1);
-            blockGeometry.setAttribute('id', idAttribute);
+        blocks.forEach((blockIndex, index) => {
+          const block = getBlock(blockIndex);
+          if (block) {
+            let blockGeometry: BufferGeometry | null = null;
+
+            if (block.isActive) {
+              blockGeometry = blockGeometries[index];
+            }
+
+            if (blockGeometry) {
+              const object = new Object3D();
+
+              object.position.set(
+                block.localPosition.x,
+                block.localPosition.y,
+                block.localPosition.z
+              );
+              object.updateMatrix();
+
+              geometries.push(
+                blockGeometry.clone().applyMatrix4(object.matrix)
+              );
+            }
           }
+        });
+
+        if (geometries.length > 0) {
+          let mergedGeometry = mergeBufferGeometries(geometries);
+          if (mergedGeometry) {
+            console.log("MERGE");
+            mergedGeometry = mergeVertices(mergedGeometry, 0.1);
+          }
+
+          return mergedGeometry;
         }
-      }
 
-      return { hoverGeometry, blockGeometry };
-    },
-    [getBlock]
-  );
+        return null;
+      },
+      [blockGeometries, getBlock]
+    );
 
-  const generateChunkGeometry = useCallback(
-    (blocks: number[]) => {
-      const geometries: BufferGeometry[] = [];
-
-      blocks.forEach((blockIndex, index) => {
+    useEffect(() => {
+      const geometries = blocks.map((blockIndex) => {
         const block = getBlock(blockIndex);
         if (block) {
-          let blockGeometry: BufferGeometry | null = null;
-
-          if (block.isActive) {
-            blockGeometry = blockGeometries[index];
-          }
-
-          if (blockGeometry) {
-            const object = new Object3D();
-
-            object.position.set(block.localPosition.x, block.localPosition.y, block.localPosition.z);
-            object.updateMatrix();
-
-            geometries.push(blockGeometry.clone().applyMatrix4(object.matrix));
-          }
+          return generateBlockGeometry(block);
         }
+        return null;
       });
 
-      if (geometries.length > 0) {
-        return mergeBufferGeometries(geometries);
-      }
+      const generatedBlockGeometries = geometries.map((geometry) =>
+        geometry ? geometry.blockGeometry : null
+      );
 
-      return null;
-    },
-    [blockGeometries, getBlock]
-  );
+      setBlockGeometries(generatedBlockGeometries);
+    }, [blocks, generateBlockGeometry, getBlock, renderKey]);
 
-  useEffect(() => {
-    const geometries = blocks.map((blockIndex) => {
-      const block = getBlock(blockIndex);
-      if (block) {
-        return generateBlockGeometry(block);
-      }
-      return null;
-    });
+    useEffect(() => {
+      const ChunkGeometry = generateChunkGeometry(blocks);
+      setGeometry(ChunkGeometry);
+    }, [blocks, generateChunkGeometry]);
 
-    const generatedBlockGeometries = geometries.map((geometry) => (geometry ? geometry.blockGeometry : null));
+    const handlePointerLeave = () => {
+      setBlockHovered(null);
+    };
 
-    setBlockGeometries(generatedBlockGeometries);
-  }, [blocks, generateBlockGeometry, getBlock, renderKey]);
+    return (
+      <group position={worldPosition}>
+        {geometry && (
+          <RigidBody type="fixed" colliders="trimesh">
+            <mesh ref={ref} geometry={geometry} receiveShadow castShadow>
+              <meshStandardMaterial color={"#646464"} />
+            </mesh>
+          </RigidBody>
+        )}
+      </group>
+    );
+  }
+);
 
-  useEffect(() => {
-    const ChunkGeometry = generateChunkGeometry(blocks);
-    setGeometry(ChunkGeometry);
-  }, [blocks, generateChunkGeometry]);
-
-  const handlePointerLeave = () => {
-    setBlockHovered(null);
-  };
-
-  return (
-    <group position={worldPosition}>
-      {geometry && (
-        <RigidBody type="fixed" colliders="trimesh">
-          <mesh ref={ref} geometry={geometry} receiveShadow castShadow>
-            <meshStandardMaterial color={'#646464'} />
-          </mesh>
-        </RigidBody>
-      )}
-    </group>
-  );
-});
-
-Chunk.displayName = 'Chunk';
+Chunk.displayName = "Chunk";
 
 export default memo(Chunk);

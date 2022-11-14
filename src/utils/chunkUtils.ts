@@ -1,9 +1,17 @@
-import { Vector3 } from 'three';
-import { blockSize, blocksInChunk, chunkSize, totalBlocksInChunk } from './constants';
+import { Vector3 } from "three";
+import {
+  blockSize,
+  blocksInChunk,
+  chunkSize,
+  totalBlocksInChunk,
+} from "./constants";
 
 //
 
-const calcChunkArrayPositionForIndex = (index: number, chunksInWorld: Vector3): Vector3 => {
+const calcChunkArrayPositionForIndex = (
+  index: number,
+  chunksInWorld: Vector3
+): Vector3 => {
   const x = index % chunksInWorld.x;
   const y = Math.floor(index / (chunksInWorld.x * chunksInWorld.z));
   const z = Math.floor(index / chunksInWorld.x) % chunksInWorld.z;
@@ -15,7 +23,10 @@ const calcChunkArrayPositionForIndex = (index: number, chunksInWorld: Vector3): 
 
 //
 
-const calcChunkWorldPositionForIndex = (index: number, chunksInWorld: Vector3): Vector3 => {
+const calcChunkWorldPositionForIndex = (
+  index: number,
+  chunksInWorld: Vector3
+): Vector3 => {
   const arrayPosition = calcChunkArrayPositionForIndex(index, chunksInWorld);
 
   const x = (chunksInWorld.x - 1) * 0.5;
@@ -56,7 +67,10 @@ const calcBlockPositionForIndex = (index: number): Vector3 => {
 
 //
 
-const calcChunkPositionForWorldPosition = (position: Vector3, chunksInWorld: Vector3): Vector3 => {
+const calcChunkPositionForWorldPosition = (
+  position: Vector3,
+  chunksInWorld: Vector3
+): Vector3 => {
   const worldOffset = chunksInWorld.clone().divideScalar(2);
   const chunkPosition = position
     .clone()
@@ -86,7 +100,10 @@ const calcBlockArrayPositionForPosition = (position: Vector3): Vector3 => {
 
 //
 
-const calcChunkArrayPositionForPosition = (position: Vector3, chunksInWorld: Vector3): Vector3 => {
+const calcChunkArrayPositionForPosition = (
+  position: Vector3,
+  chunksInWorld: Vector3
+): Vector3 => {
   const x = (chunksInWorld.x - 1) * 0.5;
   const y = (chunksInWorld.y - 1) * 0.5;
   const z = (chunksInWorld.z - 1) * 0.5;
@@ -112,7 +129,10 @@ const calcBlockIndexForArrayPosition = (arrayPosition: Vector3) => {
 
 //
 
-const calcChunkIndexForArrayPosition = (arrayPosition: Vector3, chunksInWorld: Vector3) => {
+const calcChunkIndexForArrayPosition = (
+  arrayPosition: Vector3,
+  chunksInWorld: Vector3
+) => {
   const x = arrayPosition.x;
   const y = arrayPosition.y * chunksInWorld.x * chunksInWorld.z;
   const z = arrayPosition.z * chunksInWorld.x;
@@ -145,7 +165,27 @@ const calcBlockIndexForPosition = (position: Vector3) => {
 
 //
 
-const calcArrayPositionFromWorldPosition = (position: Vector3, blocksInWorld: Vector3) => {
+const calcWorldPositionFromArrayPosition = (
+  position: Vector3,
+  blocksInWorld: Vector3
+) => {
+  const x = (blocksInWorld.x - 1) * 0.5;
+  const y = (blocksInWorld.y - 1) * 0.5;
+  const z = (blocksInWorld.z - 1) * 0.5;
+
+  const offset = new Vector3(x, y, z);
+
+  const worldPosition = position.clone().sub(offset).multiply(blockSize);
+
+  return worldPosition;
+};
+
+//
+
+const calcArrayPositionFromWorldPosition = (
+  position: Vector3,
+  blocksInWorld: Vector3
+) => {
   const x = (blocksInWorld.x - 1) * 0.5;
   const y = (blocksInWorld.y - 1) * 0.5;
   const z = (blocksInWorld.z - 1) * 0.5;
@@ -157,8 +197,14 @@ const calcArrayPositionFromWorldPosition = (position: Vector3, blocksInWorld: Ve
   return arrayPosition;
 };
 
-const calcWorldIndexFromWorldPosition = (position: Vector3, blocksInWorld: Vector3) => {
-  const arrayPosition = calcArrayPositionFromWorldPosition(position, blocksInWorld);
+const calcWorldIndexFromWorldPosition = (
+  position: Vector3,
+  blocksInWorld: Vector3
+) => {
+  const arrayPosition = calcArrayPositionFromWorldPosition(
+    position,
+    blocksInWorld
+  );
 
   const x = arrayPosition.x;
   const y = arrayPosition.y * blocksInWorld.x * blocksInWorld.z;
@@ -182,4 +228,5 @@ export {
   calcBlockIndexForPosition,
   calcWorldIndexFromWorldPosition,
   calcArrayPositionFromWorldPosition,
+  calcWorldPositionFromArrayPosition,
 };

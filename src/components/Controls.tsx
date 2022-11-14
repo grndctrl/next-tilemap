@@ -1,7 +1,7 @@
-import { OrbitControls, GizmoHelper, GizmoViewport } from '@react-three/drei';
-import { useThree } from '@react-three/fiber';
-import { useInterfaceStore } from '../utils/interfaceStore';
-import { colors } from '../utils/tailwindDefaults';
+import { OrbitControls, GizmoHelper, GizmoViewport } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
+import { useInterfaceStore } from "../utils/interfaceStore";
+import { colors } from "../utils/tailwindDefaults";
 
 const Controls = () => {
   const { blockMutated, currUISelection } = useInterfaceStore();
@@ -15,8 +15,8 @@ const Controls = () => {
         makeDefault
         enabled={currUISelection === null}
         // enablePan={false}
-        minPolarAngle={Math.PI / 3}
-        maxPolarAngle={Math.PI / 3}
+        // minPolarAngle={Math.PI / 3}
+        // maxPolarAngle={Math.PI / 3}
       />
 
       <GizmoHelper>

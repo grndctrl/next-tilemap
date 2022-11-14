@@ -1,22 +1,27 @@
-import { Vector3 } from 'three';
-import createStore, { Schema, Store } from 'utils/typedArrayStore';
-import { TrackBlockType, TrackDirectionType, TrackType, TrackVariation } from './';
+import { Vector3 } from "three";
+import createStore, { Schema, Store } from "utils/typedArrayStore";
+import {
+  TrackBlockType,
+  TrackDirectionType,
+  TrackType,
+  TrackVariation,
+} from "./";
 
 const worldPositionSchema: Schema = {
-  x: 'Float32',
-  y: 'Float32',
-  z: 'Float32',
+  x: "Float32",
+  y: "Float32",
+  z: "Float32",
 };
 
 const directionSchema: Schema = {
-  from: 'Int8',
-  to: 'Int8',
-  angle: 'Int8',
+  from: "Int8",
+  to: "Int8",
+  angle: "Int8",
 };
 
 const trackSchema: Schema = {
-  variation: 'Int8',
-  isPartial: 'Uint8',
+  variation: "Int8",
+  isPartial: "Uint8",
 };
 
 //
@@ -42,7 +47,11 @@ class TrackStore {
   }
 
   private getWorldPosition(id: number) {
-    return new Vector3(this.worldPosition.x[id], this.worldPosition.y[id], this.worldPosition.z[id]);
+    return new Vector3(
+      this.worldPosition.x[id],
+      this.worldPosition.y[id],
+      this.worldPosition.z[id]
+    );
   }
 
   private getDirection(id: number) {
@@ -64,7 +73,11 @@ class TrackStore {
     const tempVector = new Vector3();
 
     for (let i = 0; i < this.maxLength; i++) {
-      tempVector.set(this.worldPosition.x[i], this.worldPosition.y[i], this.worldPosition.z[i]);
+      tempVector.set(
+        this.worldPosition.x[i],
+        this.worldPosition.y[i],
+        this.worldPosition.z[i]
+      );
 
       if (tempVector.equals(worldPosition)) {
         return i;
@@ -77,7 +90,7 @@ class TrackStore {
   public getBlock(query: number | Vector3): TrackBlockType | null {
     let id = -1;
 
-    if (typeof query !== 'number') {
+    if (typeof query !== "number") {
       id = this.getBlockId(query);
     } else {
       id = query;
@@ -137,17 +150,36 @@ class TrackStore {
   //
 
   public exportJSON() {
-    const worldPosition = (this.worldPosition = {});
-    const direction = (this.direction = {});
-    const track = (this.track = {});
-    const maxLength = (this.maxLength = 0);
+    let length = 0;
+    for (let i = 0; i < this.maxLength; i++) {
+      if (this.track.variation[i] === TrackVariation.EMPTY) break;
 
-    const json = JSON.stringify({
+      length++;
+    }
+
+    const worldPosition = {
+      x: Array.from(this.worldPosition.x.slice(0, length)),
+      y: Array.from(this.worldPosition.y.slice(0, length)),
+      z: Array.from(this.worldPosition.z.slice(0, length)),
+    };
+    const direction = {
+      from: Array.from(this.direction.from.slice(0, length)),
+      to: Array.from(this.direction.to.slice(0, length)),
+      angle: Array.from(this.direction.angle.slice(0, length)),
+    };
+    const track = {
+      variation: Array.from(this.track.variation.slice(0, length)),
+      isPartial: Array.from(this.track.isPartial.slice(0, length)),
+    };
+    const maxLength = this.maxLength;
+
+    const json = {
+      length,
+      maxLength,
       worldPosition,
       direction,
       track,
-      maxLength,
-    });
+    };
 
     return json;
   }

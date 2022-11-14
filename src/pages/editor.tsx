@@ -1,7 +1,7 @@
-import type { NextPage } from 'next';
-import { useEffect } from 'react';
-import Scene from '../components/Scene';
-import UserInterface from '../components/UserInterface';
+import type { NextPage } from "next";
+import { useEffect } from "react";
+import Scene from "../components/Scene";
+import UserInterface from "../components/UserInterface";
 
 const Editor: NextPage = () => {
   useEffect(() => {}, []);

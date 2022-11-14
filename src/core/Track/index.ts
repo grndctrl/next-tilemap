@@ -1,5 +1,5 @@
-import { Vector3 } from 'three';
-import TrackStore from './TrackStore';
+import { Vector3 } from "three";
+import TrackStore from "./TrackStore";
 
 export enum TrackDirection {
   NORTH,
@@ -32,7 +32,20 @@ export type TrackType = {
   isPartial: boolean;
 };
 
-export type TrackBlockType = { id: number; worldPosition: Vector3; direction: TrackDirectionType; track: TrackType };
+export type TrackBlockType = {
+  id: number;
+  worldPosition: Vector3;
+  direction: TrackDirectionType;
+  track: TrackType;
+};
+
+export interface TrackJSON {
+  length: number;
+  maxLength: number;
+  worldPosition: { x: number[]; y: number[]; z: number[] };
+  direction: { from: number[]; to: number[]; angle: number[] };
+  track: { variation: number[]; isPartial: number[] };
+}
 
 class Track {
   private store: TrackStore;
@@ -41,7 +54,7 @@ class Track {
     this.store = new TrackStore();
   }
 
-  public init(maxLength: number) {
+  public init(maxLength: number = 512) {
     this.store.init(maxLength);
   }
 
