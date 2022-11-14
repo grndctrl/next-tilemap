@@ -1,27 +1,47 @@
 import { Canvas } from "@react-three/fiber";
+import { Box } from "@react-three/drei";
 import Lighting from "./Lighting";
-import { OrthographicCamera } from "three";
+import { OrthographicCamera, Vector3 } from "three";
 import Controls from "./Controls";
 import SceneInterface from "./UserInterface/SceneInterface";
 import World from "./World";
 import Track from "./Track";
+import { useEffect, useState } from "react";
+import { useTrack } from "core/Track/hooks";
+import Player from "./Player";
 import PostProcessing from "./PostProcessing";
+import {
+  interactionGroups,
+  Physics,
+  RigidBody,
+  RigidBodyApi,
+  Debug,
+} from "@react-three/rapier";
 
 function Scene() {
-  const camera = new OrthographicCamera();
-  camera.position.set(-256, 256, 256);
-  camera.zoom = 8;
-  camera.rotation.set(-30 * (Math.PI / 180), -Math.PI / 4, 0, "YXZ");
-  camera.near = 0.1;
-  camera.far = 1000;
+  const { getBlock } = useTrack();
+  const [start, setStart] = useState<Vector3 | null>(null);
+
+  useEffect(() => {
+    const start = getBlock(0);
+
+    if (start) {
+      setStart(start.worldPosition.clone().add(new Vector3(0, 10, 0)));
+    }
+  }, []);
 
   return (
-    <Canvas gl={{ antialias: false }} dpr={2} camera={camera} shadows>
+    <Canvas gl={{ antialias: false }} dpr={2} shadows>
       <Lighting />
-      <Controls />
+      {/* <Controls /> */}
       <SceneInterface />
-      <World />
-      <Track />
+      {start && <Box position={start} />}
+      <Physics>
+        {start && <Player startPosition={start} />}
+        {/* <Debug /> */}
+        <World />
+        <Track />
+      </Physics>
     </Canvas>
   );
 }

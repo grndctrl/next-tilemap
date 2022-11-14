@@ -1,11 +1,12 @@
-import { Box } from '@react-three/drei';
-import { TrackBlockType } from 'core/Track';
-import { useTrack } from 'core/Track/hooks';
-import { TrackModel } from 'models/TrackModel';
-import { useEffect, useState } from 'react';
-import { useInterfaceStore } from 'utils/interfaceStore';
-import { UISelection } from 'utils/interfaceUtils';
-import NextTrackBlock from './UserInterface/NextTrackBlock';
+import { Box } from "@react-three/drei";
+import { TrackBlockType } from "core/Track";
+import { useTrack } from "core/Track/hooks";
+import { TrackModel } from "models/TrackModel";
+import { useEffect, useState } from "react";
+import { useInterfaceStore } from "utils/interfaceStore";
+import { UISelection } from "utils/interfaceUtils";
+import NextTrackBlock from "./UserInterface/NextTrackBlock";
+import { RigidBody } from "@react-three/rapier";
 
 const Track = () => {
   const currUISelection = useInterfaceStore((state) => state.currUISelection);
@@ -27,20 +28,24 @@ const Track = () => {
   }, [getBlock, length]);
 
   useEffect(() => {
-    console.log('trackBlocks', trackBlocks);
+    console.log("trackBlocks", trackBlocks);
   }, [trackBlocks]);
 
   return (
     <group>
       {trackBlocks.map((trackBlock, index) => (
-        <group key={`track-${index}`}>
+        <RigidBody key={`track-${index}`} type="fixed" colliders="trimesh">
           <TrackModel
             position={trackBlock.worldPosition}
             variation={trackBlock.track.variation}
             angle={trackBlock.direction.angle}
-            rotation={[0, Math.PI * 0.5 * trackBlock.direction.from + Math.PI, 0]}
+            rotation={[
+              0,
+              Math.PI * 0.5 * trackBlock.direction.from + Math.PI,
+              0,
+            ]}
           />
-        </group>
+        </RigidBody>
       ))}
     </group>
   );

@@ -7,6 +7,13 @@ import Lighting from "./Lighting";
 import Track from "./Track";
 import SceneInterface from "./UserInterface/SceneInterface";
 import World from "./World";
+import {
+  interactionGroups,
+  Physics,
+  RigidBody,
+  RigidBodyApi,
+  Debug,
+} from "@react-three/rapier";
 
 function PlayScene() {
   const camera = new OrthographicCamera();
@@ -16,22 +23,16 @@ function PlayScene() {
   camera.near = 0.1;
   camera.far = 1000;
 
-  const { getBlock } = useTrack();
-
-  useEffect(() => {
-    const start = getBlock(0);
-
-    if (start) {
-    }
-  }, []);
-
   return (
     <Canvas gl={{ antialias: false }} dpr={2} camera={camera} shadows>
       <Lighting />
       <Controls />
       <SceneInterface />
-      <World />
-      <Track />
+
+      <Physics colliders={false} paused={true}>
+        <World />
+        <Track />
+      </Physics>
     </Canvas>
   );
 }
