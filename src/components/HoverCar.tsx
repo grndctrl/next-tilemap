@@ -95,17 +95,17 @@ const HoverCar = forwardRef<RigidBodyApi, HoverCarProps>(
     const { world: worldApi } = useRapier();
     const world = worldApi.raw();
     const enginePositions = [
-      new Vector3(-1.5, 0, 2).multiplyScalar(0.1),
-      new Vector3(1.5, 0, 2).multiplyScalar(0.1),
-      new Vector3(-1.5, 0, -2).multiplyScalar(0.1),
-      new Vector3(1.5, 0, -2).multiplyScalar(0.1),
+      new Vector3(-1.5, 0, 2).multiplyScalar(0.25),
+      new Vector3(1.5, 0, 2).multiplyScalar(0.25),
+      new Vector3(-1.5, 0, -2).multiplyScalar(0.25),
+      new Vector3(1.5, 0, -2).multiplyScalar(0.25),
     ];
 
     return (
       <RigidBody
         ref={bodyRef}
         colliders={false}
-        mass={10}
+        mass={4}
         linearDamping={1}
         angularDamping={2}
         position={[0, 8, 0]}

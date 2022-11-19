@@ -18,8 +18,7 @@ const WorldSizedLight = () => {
   return (
     <directionalLight
       castShadow
-      color={"#fef3c7"}
-      intensity={0.75}
+      intensity={0.25}
       position={[
         blockSize.x,
         worldSize.y * 0.75 + blockSize.y,
@@ -79,7 +78,7 @@ const DebugLight = () => {
 const Lighting = (props: JSX.IntrinsicElements["group"]) => {
   return (
     <group {...props}>
-      <ambientLight intensity={0.25} color="#ede9fe" />
+      <ambientLight intensity={0.75} color="#ede9fe" />
       <WorldSizedLight />
     </group>
   );

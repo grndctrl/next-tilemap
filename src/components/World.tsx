@@ -18,7 +18,11 @@ import { useWorld } from "core/World";
 import { blockSize } from "../utils/constants";
 import Chunk, { ChunkRef } from "./Chunk";
 
-const World = () => {
+type WorldProps = {
+  isSkippingInteraction?: boolean;
+};
+
+const World = ({ isSkippingInteraction = false }: WorldProps) => {
   const { chunks, getBlock, measurements } = useWorld();
   const chunkRefs = useRef<(Mesh | null)[]>(
     Array.from({ length: chunks.length }).map(() => null)
@@ -147,6 +151,8 @@ const World = () => {
   };
 
   useFrame(({ mouse, camera }) => {
+    if (isSkippingInteraction) return;
+
     raycaster.setFromCamera(mouse, camera);
 
     const meshes: Mesh[] = [];

@@ -1,4 +1,5 @@
-import { BufferAttribute, BufferGeometry, Vector3 } from 'three';
+import { GetBlock } from 'core/World';
+import { BufferAttribute, BufferGeometry, Vector2, Vector3 } from 'three';
 import { mergeBufferGeometries } from 'three-stdlib';
 import { blockSize } from './constants';
 
@@ -13,7 +14,7 @@ export type BlockType = {
   vertices: boolean[];
 };
 
-const blockVertexTable = [
+const blockVertexPositionTable = [
   new Vector3(-1, -1, -1).multiply(blockSize).multiplyScalar(0.5),
   new Vector3(1, -1, -1).multiply(blockSize).multiplyScalar(0.5),
   new Vector3(-1, -1, 1).multiply(blockSize).multiplyScalar(0.5),
@@ -32,6 +33,25 @@ const blockVertexTable = [
   new Vector3(0, 1, 0).multiply(blockSize).multiplyScalar(0.5),
 ];
 
+const topUvTable = [
+  new Vector2(0, 0),
+  new Vector2(1, 0),
+  new Vector2(0, 1),
+  new Vector2(1, 1),
+  //
+  new Vector2(0, 0),
+  new Vector2(1, 0),
+  new Vector2(0, 1),
+  new Vector2(1, 1),
+  //
+  new Vector2(0, 0.5),
+  new Vector2(1, 0.5),
+  new Vector2(0.5, 0),
+  new Vector2(0.5, 1),
+  new Vector2(0.5, 0.5),
+  new Vector2(0.5, 0.5),
+];
+
 const blockTriangleTable = [
   // full
   {
@@ -41,6 +61,28 @@ const blockTriangleTable = [
       [5, 13, 7],
       [7, 13, 6],
       [6, 13, 4],
+    ],
+    uv: [
+      [
+        [0, 0],
+        [0.5, 0.5],
+        [1, 0],
+      ],
+      [
+        [1, 0],
+        [0.5, 0.5],
+        [1, 1],
+      ],
+      [
+        [1, 1],
+        [0.5, 0.5],
+        [0, 1],
+      ],
+      [
+        [0, 1],
+        [0.5, 0.5],
+        [0, 0],
+      ],
     ],
   },
 
@@ -522,7 +564,7 @@ const getTopTriangles = (vertices: boolean[], neighbourVertices: boolean[]): num
     return getSideTriangles(
       [6, 7, 4, 5, 13],
       [vertices[6], vertices[7], vertices[4], vertices[5], vertices[13]],
-      neighbourVertices
+      neighbourVertices,
     );
   } else if (tableIndex === 16367 || tableIndex === 16351 || tableIndex === 16319 || tableIndex === 16255) {
     const calcTriangleIndex = (indices: number[]) =>
@@ -543,13 +585,79 @@ const getTopTriangles = (vertices: boolean[], neighbourVertices: boolean[]): num
       ...getSideTriangles(
         [6, 7, 4, 5, 13],
         [vertices[6], vertices[7], vertices[4], vertices[5], vertices[13]],
-        neighbourVertices
+        neighbourVertices,
       ),
       ...rampTriangles,
     ];
   }
 
   return topTriangles;
+};
+
+//
+
+// TODO: Use arrays, instead of Vector3/Vector2
+const createBufferGeometry = (positions: Vector3[], uvs: Vector2[]) => {
+  const positionArray = new Float32Array(positions.map((position) => position.toArray()).flat());
+
+  const uvArray = new Float32Array(uvs.map((uv) => uv.toArray()).flat());
+
+  const positionAttribute = new BufferAttribute(positionArray, 3);
+  const uvAttribute = new BufferAttribute(uvArray, 2);
+
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', positionAttribute);
+  geometry.setAttribute('uv', uvAttribute);
+  geometry.computeVertexNormals();
+
+  return geometry;
+};
+
+const getTopGeometry = (vertices: boolean[], neighbourVertices: boolean[]): BufferGeometry | null => {
+  const tableIndex = calcTableIndex(vertices);
+  const tableEntry = blockTriangleTable.find((table) => table.index === tableIndex);
+
+  if (!tableEntry) return null;
+
+  const indices = [6, 7, 4, 5, 13];
+
+  const calcTriangleIndex = (indices: number[]) =>
+    indices.map((index) => Math.pow(2, index)).reduce((previous, current) => previous + current);
+
+  const topSideTriangleIndices = [
+    calcTriangleIndex([6, 7, 13]),
+    calcTriangleIndex([7, 5, 13]),
+    calcTriangleIndex([5, 4, 13]),
+    calcTriangleIndex([4, 6, 13]),
+  ];
+
+  const rampTriangles = tableEntry.triangles.filter((triangle) => {
+    return !topSideTriangleIndices.includes(calcTriangleIndex(triangle));
+  });
+
+  const visibleTriangles = getVisibleTriangles(
+    [vertices[6], vertices[7], vertices[4], vertices[5], vertices[13]],
+    neighbourVertices,
+  )
+    .map((triangle) => [indices[triangle[0]], indices[triangle[1]], indices[triangle[2]]])
+    .concat(rampTriangles);
+
+  const positions = visibleTriangles
+    .map((triangle) => [
+      blockVertexPositionTable[triangle[0]],
+      blockVertexPositionTable[triangle[1]],
+      blockVertexPositionTable[triangle[2]],
+    ])
+    .flat();
+
+  const uvs = visibleTriangles
+    .concat(rampTriangles)
+    .map((triangle) => [topUvTable[triangle[0]], topUvTable[triangle[1]], topUvTable[triangle[2]]])
+    .flat();
+
+  const geometry = createBufferGeometry(positions, uvs);
+
+  return geometry;
 };
 
 /**
@@ -594,6 +702,78 @@ const getSideTriangles = (indices: number[], vertices: boolean[], neighbourVerti
   return triangles;
 };
 
+const getVisibleTriangles = (vertices: boolean[], neighbourVertices: boolean[]): number[][] => {
+  const triangleTable = [
+    [0, 1, 4],
+    [1, 3, 4],
+    [2, 0, 4],
+    [3, 2, 4],
+  ];
+
+  const triangles = triangleTable
+    .filter((vertexIndices) => {
+      // filter triangles where all vertices are true
+      return vertices[vertexIndices[0]] && vertices[vertexIndices[1]] && vertices[vertexIndices[2]];
+    })
+    .filter((vertexIndices) => {
+      // filter triangles if there is a neighbour triangle missing, so when one member of neighbourVertices equals false
+      return !(
+        neighbourVertices[vertexIndices[0]] &&
+        neighbourVertices[vertexIndices[1]] &&
+        neighbourVertices[vertexIndices[2]]
+      );
+    });
+
+  return triangles;
+};
+
+/**
+ * Get triangle vertices for a wall.
+ * @example
+ * indices[]:
+ * 2 - - - 3
+ * | \   / |
+ * |   4   |
+ * | /   \ |
+ * 0 - - - 1
+ *
+ * @param {number[]} indices
+ * @param {boolean[]} vertices
+ * @param {boolean[]} neighbourVertices
+ * @return {*}  {number[][]}
+ */
+const getSideGeometry = (
+  indices: number[],
+  vertices: boolean[],
+  neighbourVertices: boolean[],
+): BufferGeometry | null => {
+  const uvTable = [new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 0), new Vector2(1, 0), new Vector2(0.5, 0.5)];
+
+  const visibleTriangles = getVisibleTriangles(vertices, neighbourVertices);
+
+  if (visibleTriangles.length > 0) {
+    const positions = visibleTriangles
+      .map((triangle) => [
+        blockVertexPositionTable[indices[triangle[0]]],
+        blockVertexPositionTable[indices[triangle[1]]],
+        blockVertexPositionTable[indices[triangle[2]]],
+      ])
+      .flat();
+
+    const uvs = visibleTriangles
+      .map((triangle) => [uvTable[triangle[0]], uvTable[triangle[1]], uvTable[triangle[2]]])
+      .flat();
+
+    console.log('before', visibleTriangles);
+
+    const geometry = createBufferGeometry(positions, uvs);
+
+    return geometry;
+  }
+
+  return null;
+};
+
 const getNeighbourVerticesForNeighboursInBlocks = (neighbours: (BlockType | null)[]): boolean[] => {
   const currentNeighbourVertices: boolean[] = [];
 
@@ -604,7 +784,7 @@ const getNeighbourVerticesForNeighboursInBlocks = (neighbours: (BlockType | null
       neighbours[0].vertices[3],
       neighbours[0].vertices[5],
       neighbours[0].vertices[7],
-      neighbours[0].vertices[9]
+      neighbours[0].vertices[9],
     );
   } else {
     currentNeighbourVertices.push(false, false, false, false, false);
@@ -617,7 +797,7 @@ const getNeighbourVerticesForNeighboursInBlocks = (neighbours: (BlockType | null
       neighbours[1].vertices[0],
       neighbours[1].vertices[6],
       neighbours[1].vertices[4],
-      neighbours[1].vertices[8]
+      neighbours[1].vertices[8],
     );
   } else {
     currentNeighbourVertices.push(false, false, false, false, false);
@@ -630,7 +810,7 @@ const getNeighbourVerticesForNeighboursInBlocks = (neighbours: (BlockType | null
       neighbours[2].vertices[2],
       neighbours[2].vertices[7],
       neighbours[2].vertices[6],
-      neighbours[2].vertices[11]
+      neighbours[2].vertices[11],
     );
   } else {
     currentNeighbourVertices.push(false, false, false, false, false);
@@ -643,7 +823,7 @@ const getNeighbourVerticesForNeighboursInBlocks = (neighbours: (BlockType | null
       neighbours[3].vertices[1],
       neighbours[3].vertices[4],
       neighbours[3].vertices[5],
-      neighbours[3].vertices[10]
+      neighbours[3].vertices[10],
     );
   } else {
     currentNeighbourVertices.push(false, false, false, false, false);
@@ -656,7 +836,7 @@ const getNeighbourVerticesForNeighboursInBlocks = (neighbours: (BlockType | null
       neighbours[4].vertices[7],
       neighbours[4].vertices[4],
       neighbours[4].vertices[5],
-      neighbours[4].vertices[13]
+      neighbours[4].vertices[13],
     );
   } else {
     currentNeighbourVertices.push(false, false, false, false, false);
@@ -669,7 +849,7 @@ const getNeighbourVerticesForNeighboursInBlocks = (neighbours: (BlockType | null
       neighbours[5].vertices[3],
       neighbours[5].vertices[0],
       neighbours[5].vertices[1],
-      neighbours[5].vertices[12]
+      neighbours[5].vertices[12],
     );
   } else {
     currentNeighbourVertices.push(false, false, false, false, false);
@@ -706,7 +886,7 @@ const geometryFromTriangles = (triangles: number[][]) => {
         .map((index) => {
           return [vertexTable[index][0], vertexTable[index][1], vertexTable[index][2]];
         })
-        .flat()
+        .flat(),
     );
 
     const attribute = new BufferAttribute(position, 3);
@@ -721,77 +901,197 @@ const geometryFromTriangles = (triangles: number[][]) => {
   return mergeBufferGeometries(triangleGeometries);
 };
 
-// const calcRampVertices = (blockDirection: BlockDirection) => {
-//   let vertices = Array.from({ length: 14 }).map(() => true);
+const generateBlockGeometry = (getBlock: GetBlock, { id, neighbours, vertices }: BlockType) => {
+  const neighbourBlocks = neighbours.map((neighbour) => (neighbour > -1 ? getBlock(neighbour) : null));
+  const neighbourVertices: boolean[] = getNeighbourVerticesForNeighboursInBlocks(neighbourBlocks);
 
-//   switch (blockDirection) {
-//     case BlockDirection.NORTH:
-//       vertices[6] = false;
-//       vertices[7] = false;
-//       vertices[11] = false;
-//       break;
-//     case BlockDirection.EAST:
-//       vertices[4] = false;
-//       vertices[6] = false;
-//       vertices[8] = false;
-//       break;
-//     case BlockDirection.SOUTH:
-//       vertices[4] = false;
-//       vertices[5] = false;
-//       vertices[10] = false;
-//       break;
-//     case BlockDirection.WEST:
-//       vertices[5] = false;
-//       vertices[7] = false;
-//       vertices[9] = false;
-//       break;
-//   }
+  let hoverGeometry: BufferGeometry | null = null;
+  let blockGeometry: BufferGeometry | null = null;
 
-//   return vertices;
-// };
+  const topTriangles = getTopTriangles(vertices, [
+    neighbourVertices[25],
+    neighbourVertices[26],
+    neighbourVertices[27],
+    neighbourVertices[28],
+    neighbourVertices[29],
+  ]);
 
-// const getAdditionMutation = (vertex: number, block: BlockType) => {
-//   let vertices = Array.from({ length: 14 }).map(() => false);
+  const topGeometry = getTopGeometry(vertices, [
+    neighbourVertices[25],
+    neighbourVertices[26],
+    neighbourVertices[27],
+    neighbourVertices[28],
+    neighbourVertices[29],
+  ]);
 
-//   switch (vertex) {
-//     case 4:
-//       vertices = getVerticesForTableIndex(5399);
-//       break;
-//     case 5:
-//       vertices = getVerticesForTableIndex(5675);
-//       break;
-//     case 6:
-//       vertices = getVerticesForTableIndex(6477);
-//       break;
-//     case 7:
-//       vertices = getVerticesForTableIndex(6798);
-//       break;
-//   }
+  if (topGeometry) {
+    const geometries: BufferGeometry[] = [topGeometry];
 
-//   return vertices;
+    const leftGeometry = getSideGeometry(
+      [0, 2, 4, 6, 8],
+      [vertices[0], vertices[2], vertices[4], vertices[6], vertices[8]],
+      [neighbourVertices[0], neighbourVertices[1], neighbourVertices[2], neighbourVertices[3], neighbourVertices[4]],
+    );
+    if (leftGeometry) {
+      geometries.push(leftGeometry);
+    }
 
-//   // const block: BlockType = {
-//   //   index: blockAbove.index,
-//   //   isActive: true,
-//   //   position: blockAbove.position,
-//   //   worldPosition: blockAbove.worldPosition,
-//   //   vertices: vertices,
-//   //   neighbours: blockAbove.neighbours,
-//   //   parentChunk: blockAbove.parentChunk,
-//   //   renderKey: blockAbove.renderKey ? blockAbove.renderKey + 1 : 0,
-//   // };
-// };
+    const rightGeometry = getSideGeometry(
+      [3, 1, 7, 5, 9],
+      [vertices[3], vertices[1], vertices[7], vertices[5], vertices[9]],
+      [neighbourVertices[5], neighbourVertices[6], neighbourVertices[7], neighbourVertices[8], neighbourVertices[9]],
+    );
+    if (rightGeometry) {
+      geometries.push(rightGeometry);
+    }
+
+    const backGeometry = getSideGeometry(
+      [1, 0, 5, 4, 10],
+      [vertices[1], vertices[0], vertices[5], vertices[4], vertices[10]],
+      [
+        neighbourVertices[10],
+        neighbourVertices[11],
+        neighbourVertices[12],
+        neighbourVertices[13],
+        neighbourVertices[14],
+      ],
+    );
+    if (backGeometry) {
+      geometries.push(backGeometry);
+    }
+
+    const frontGeometry = getSideGeometry(
+      [2, 3, 6, 7, 11],
+      [vertices[2], vertices[3], vertices[6], vertices[7], vertices[11]],
+      [
+        neighbourVertices[15],
+        neighbourVertices[16],
+        neighbourVertices[17],
+        neighbourVertices[18],
+        neighbourVertices[19],
+      ],
+    );
+    if (frontGeometry) {
+      geometries.push(frontGeometry);
+    }
+
+    blockGeometry = mergeBufferGeometries(geometries);
+
+    if (blockGeometry) {
+      let idArray;
+      let idAttribute;
+
+      hoverGeometry = topGeometry;
+      idArray = new Int32Array(
+        Array.from({
+          length: hoverGeometry.getAttribute('position').array.length / 3,
+        }).map(() => id),
+      );
+      idAttribute = new BufferAttribute(idArray, 1);
+      hoverGeometry.setAttribute('id', idAttribute);
+
+      idArray = new Int32Array(
+        Array.from({
+          length: blockGeometry.getAttribute('position').array.length / 3,
+        }).map(() => id),
+      );
+      idAttribute = new BufferAttribute(idArray, 1);
+      blockGeometry.setAttribute('id', idAttribute);
+    }
+  }
+
+  //   if (topTriangles) {
+  //     const leftTriangles = getSideTriangles(
+  //       [0, 2, 4, 6, 8],
+  //       [vertices[0], vertices[2], vertices[4], vertices[6], vertices[8]],
+  //       [neighbourVertices[0], neighbourVertices[1], neighbourVertices[2], neighbourVertices[3], neighbourVertices[4]],
+  //     );
+  //
+  //     const rightTriangles = getSideTriangles(
+  //       [3, 1, 7, 5, 9],
+  //       [vertices[3], vertices[1], vertices[7], vertices[5], vertices[9]],
+  //       [neighbourVertices[5], neighbourVertices[6], neighbourVertices[7], neighbourVertices[8], neighbourVertices[9]],
+  //     );
+  //
+  //     const backTriangles = getSideTriangles(
+  //       [1, 0, 5, 4, 10],
+  //       [vertices[1], vertices[0], vertices[5], vertices[4], vertices[10]],
+  //       [
+  //         neighbourVertices[10],
+  //         neighbourVertices[11],
+  //         neighbourVertices[12],
+  //         neighbourVertices[13],
+  //         neighbourVertices[14],
+  //       ],
+  //     );
+  //
+  //     const frontTriangles = getSideTriangles(
+  //       [2, 3, 6, 7, 11],
+  //       [vertices[2], vertices[3], vertices[6], vertices[7], vertices[11]],
+  //       [
+  //         neighbourVertices[15],
+  //         neighbourVertices[16],
+  //         neighbourVertices[17],
+  //         neighbourVertices[18],
+  //         neighbourVertices[19],
+  //       ],
+  //     );
+  //
+  //     const triangles = topTriangles
+  //       .concat(leftTriangles)
+  //       .concat(rightTriangles)
+  //       .concat(backTriangles)
+  //       .concat(frontTriangles);
+  //
+  //     if (topTriangles.length > 0) {
+  //       hoverGeometry = geometryFromTriangles(topTriangles);
+  //
+  //       if (hoverGeometry) {
+  //         // TODO: does this need to be that long / every position?
+  //         const idArray = new Int32Array(
+  //           Array.from({
+  //             length: hoverGeometry.getAttribute('position').array.length / 3,
+  //           }).map(() => id),
+  //         );
+  //
+  //         const idAttribute = new BufferAttribute(idArray, 1);
+  //         hoverGeometry.setAttribute('id', idAttribute);
+  //       }
+  //     }
+  //
+  //     if (triangles.length > 0) {
+  //       blockGeometry = geometryFromTriangles(triangles);
+  //
+  //       if (blockGeometry) {
+  //         // TODO: does this need to be that long / every position?
+  //         const idArray = new Int32Array(
+  //           Array.from({
+  //             length: blockGeometry.getAttribute('position').array.length / 3,
+  //           }).map(() => id),
+  //         );
+  //
+  //         const idAttribute = new BufferAttribute(idArray, 1);
+  //         blockGeometry.setAttribute('id', idAttribute);
+  //       }
+  //     }
+  //   }
+
+  return { hoverGeometry, blockGeometry };
+};
 
 export {
-  blockVertexTable,
+  blockVertexPositionTable as blockVertexTable,
   calcNeighboursForWorldPosition,
   calcTableIndex,
   getVerticesForTableIndex,
+  getTopGeometry,
   // blockTriangleTable,
   // calcRampVertices,
   geometryFromTriangles,
   // getAdditionMutation,
   getNeighbourVerticesForNeighboursInBlocks,
   getSideTriangles,
+  getSideGeometry,
   getTopTriangles,
+  generateBlockGeometry,
 };

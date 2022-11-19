@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import 'ui.css';
+@import "ui.css";
 
 body {
   @apply font-mono;
@@ -13,8 +13,8 @@ canvas.crisp {
 }
 
 svg {
-  width: 100%;
-  height: auto;
+  /* width: 100%;
+  height: auto; */
   fill: currentColor;
 }
 
@@ -23,7 +23,7 @@ svg {
 }
 
 .ui-element::after {
-  content: ' ';
+  content: " ";
   display: block;
   position: absolute;
   top: 0;
@@ -35,7 +35,8 @@ svg {
     rgba(0, 0, 0, 0.25),
     rgba(0, 0, 0, 0.125),
     rgba(0, 0, 0, 0.125),
-    /* rgba(255, 255, 255, 0.125), */ /* rgba(255, 255, 255, 0.125), */ rgba(0, 0, 0, 0.25)
+    /* rgba(255, 255, 255, 0.125), */ /* rgba(255, 255, 255, 0.125), */
+      rgba(0, 0, 0, 0.25)
   );
   opacity: 1;
   z-index: 2;
@@ -47,7 +48,7 @@ svg {
 } */
 
 .ui-crt::before {
-  content: ' ';
+  content: " ";
   display: block;
   position: absolute;
   top: 0;
@@ -55,14 +56,19 @@ svg {
   bottom: 0;
   right: 0;
   background: linear-gradient(rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-    linear-gradient(90deg, rgba(255, 0, 0, 0.05), rgba(0, 255, 0, 0.025), rgba(0, 0, 255, 0.05));
+    linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.05),
+      rgba(0, 255, 0, 0.025),
+      rgba(0, 0, 255, 0.05)
+    );
   z-index: 2;
   background-size: 100% 2px, 3px 100%;
   pointer-events: none;
 }
 
 .ui-crt::after {
-  content: ' ';
+  content: " ";
   display: block;
   position: absolute;
   top: 0;

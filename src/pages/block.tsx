@@ -1,33 +1,21 @@
-import {
-  Box,
-  Edges,
-  Effects,
-  GizmoHelper,
-  GizmoViewcube,
-  GizmoViewport,
-  Html,
-  Line,
-  OrbitControls,
-} from '@react-three/drei';
-import { Canvas, extend, useThree } from '@react-three/fiber';
+import { GizmoHelper, GizmoViewport, Html, OrbitControls, useTexture } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+import { Leva, useControls } from 'leva';
 import type { NextPage } from 'next';
-import { BoxGeometry, BufferAttribute, BufferGeometry, OrthographicCamera } from 'three';
-
+import { useEffect, useState } from 'react';
+import { animated, useSpring } from 'react-spring';
+import { BoxGeometry, BufferAttribute, BufferGeometry, OrthographicCamera, Vector3 } from 'three';
+import { mergeBufferGeometries } from 'three-stdlib';
 import {
   BlockType,
   blockVertexTable,
   calcTableIndex,
-  geometryFromTriangles,
-  getNeighbourVerticesForNeighboursInBlocks,
-  getSideTriangles,
+  getSideGeometry,
+  getTopGeometry,
   getTopTriangles,
 } from '../utils/blockUtils';
-import { Vector3 } from 'three';
-import { useEffect, useState } from 'react';
-import { useSpring, animated } from 'react-spring';
-import { colors } from '../utils/tailwindDefaults';
-import { useControls, Leva } from 'leva';
 import { blockSize } from '../utils/constants';
+import { colors } from '../utils/tailwindDefaults';
 
 const levaTheme = {
   elevation1: colors.slate[200],
@@ -47,41 +35,131 @@ const levaTheme = {
 };
 
 const neighbourVertexTable = [
-  { index: 1, position: blockVertexTable[1].clone().multiply(new Vector3(-1.5, 1, 1)) },
-  { index: 3, position: blockVertexTable[3].clone().multiply(new Vector3(-1.5, 1, 1)) },
-  { index: 5, position: blockVertexTable[5].clone().multiply(new Vector3(-1.5, 1, 1)) },
-  { index: 7, position: blockVertexTable[7].clone().multiply(new Vector3(-1.5, 1, 1)) },
-  { index: 9, position: blockVertexTable[9].clone().multiply(new Vector3(-1.5, 1, 1)) },
+  {
+    index: 1,
+    position: blockVertexTable[1].clone().multiply(new Vector3(-1.5, 1, 1)),
+  },
+  {
+    index: 3,
+    position: blockVertexTable[3].clone().multiply(new Vector3(-1.5, 1, 1)),
+  },
+  {
+    index: 5,
+    position: blockVertexTable[5].clone().multiply(new Vector3(-1.5, 1, 1)),
+  },
+  {
+    index: 7,
+    position: blockVertexTable[7].clone().multiply(new Vector3(-1.5, 1, 1)),
+  },
+  {
+    index: 9,
+    position: blockVertexTable[9].clone().multiply(new Vector3(-1.5, 1, 1)),
+  },
 
-  { index: 2, position: blockVertexTable[2].clone().multiply(new Vector3(-1.5, 1, 1)) },
-  { index: 0, position: blockVertexTable[0].clone().multiply(new Vector3(-1.5, 1, 1)) },
-  { index: 6, position: blockVertexTable[6].clone().multiply(new Vector3(-1.5, 1, 1)) },
-  { index: 4, position: blockVertexTable[4].clone().multiply(new Vector3(-1.5, 1, 1)) },
-  { index: 8, position: blockVertexTable[8].clone().multiply(new Vector3(-1.5, 1, 1)) },
+  {
+    index: 2,
+    position: blockVertexTable[2].clone().multiply(new Vector3(-1.5, 1, 1)),
+  },
+  {
+    index: 0,
+    position: blockVertexTable[0].clone().multiply(new Vector3(-1.5, 1, 1)),
+  },
+  {
+    index: 6,
+    position: blockVertexTable[6].clone().multiply(new Vector3(-1.5, 1, 1)),
+  },
+  {
+    index: 4,
+    position: blockVertexTable[4].clone().multiply(new Vector3(-1.5, 1, 1)),
+  },
+  {
+    index: 8,
+    position: blockVertexTable[8].clone().multiply(new Vector3(-1.5, 1, 1)),
+  },
 
-  { index: 3, position: blockVertexTable[3].clone().multiply(new Vector3(1, 1, -1.5)) },
-  { index: 2, position: blockVertexTable[2].clone().multiply(new Vector3(1, 1, -1.5)) },
-  { index: 7, position: blockVertexTable[7].clone().multiply(new Vector3(1, 1, -1.5)) },
-  { index: 6, position: blockVertexTable[6].clone().multiply(new Vector3(1, 1, -1.5)) },
-  { index: 11, position: blockVertexTable[11].clone().multiply(new Vector3(1, 1, -1.5)) },
+  {
+    index: 3,
+    position: blockVertexTable[3].clone().multiply(new Vector3(1, 1, -1.5)),
+  },
+  {
+    index: 2,
+    position: blockVertexTable[2].clone().multiply(new Vector3(1, 1, -1.5)),
+  },
+  {
+    index: 7,
+    position: blockVertexTable[7].clone().multiply(new Vector3(1, 1, -1.5)),
+  },
+  {
+    index: 6,
+    position: blockVertexTable[6].clone().multiply(new Vector3(1, 1, -1.5)),
+  },
+  {
+    index: 11,
+    position: blockVertexTable[11].clone().multiply(new Vector3(1, 1, -1.5)),
+  },
 
-  { index: 0, position: blockVertexTable[0].clone().multiply(new Vector3(1, 1, -1.5)) },
-  { index: 1, position: blockVertexTable[1].clone().multiply(new Vector3(1, 1, -1.5)) },
-  { index: 4, position: blockVertexTable[4].clone().multiply(new Vector3(1, 1, -1.5)) },
-  { index: 5, position: blockVertexTable[5].clone().multiply(new Vector3(1, 1, -1.5)) },
-  { index: 10, position: blockVertexTable[10].clone().multiply(new Vector3(1, 1, -1.5)) },
+  {
+    index: 0,
+    position: blockVertexTable[0].clone().multiply(new Vector3(1, 1, -1.5)),
+  },
+  {
+    index: 1,
+    position: blockVertexTable[1].clone().multiply(new Vector3(1, 1, -1.5)),
+  },
+  {
+    index: 4,
+    position: blockVertexTable[4].clone().multiply(new Vector3(1, 1, -1.5)),
+  },
+  {
+    index: 5,
+    position: blockVertexTable[5].clone().multiply(new Vector3(1, 1, -1.5)),
+  },
+  {
+    index: 10,
+    position: blockVertexTable[10].clone().multiply(new Vector3(1, 1, -1.5)),
+  },
 
-  { index: 6, position: blockVertexTable[6].clone().multiply(new Vector3(1, -2, 1)) },
-  { index: 7, position: blockVertexTable[7].clone().multiply(new Vector3(1, -2, 1)) },
-  { index: 4, position: blockVertexTable[4].clone().multiply(new Vector3(1, -2, 1)) },
-  { index: 5, position: blockVertexTable[5].clone().multiply(new Vector3(1, -2, 1)) },
-  { index: 13, position: blockVertexTable[13].clone().multiply(new Vector3(1, -2, 1)) },
+  {
+    index: 6,
+    position: blockVertexTable[6].clone().multiply(new Vector3(1, -2, 1)),
+  },
+  {
+    index: 7,
+    position: blockVertexTable[7].clone().multiply(new Vector3(1, -2, 1)),
+  },
+  {
+    index: 4,
+    position: blockVertexTable[4].clone().multiply(new Vector3(1, -2, 1)),
+  },
+  {
+    index: 5,
+    position: blockVertexTable[5].clone().multiply(new Vector3(1, -2, 1)),
+  },
+  {
+    index: 13,
+    position: blockVertexTable[13].clone().multiply(new Vector3(1, -2, 1)),
+  },
 
-  { index: 2, position: blockVertexTable[2].clone().multiply(new Vector3(1, -2, 1)) },
-  { index: 3, position: blockVertexTable[3].clone().multiply(new Vector3(1, -2, 1)) },
-  { index: 0, position: blockVertexTable[0].clone().multiply(new Vector3(1, -2, 1)) },
-  { index: 1, position: blockVertexTable[1].clone().multiply(new Vector3(1, -2, 1)) },
-  { index: 12, position: blockVertexTable[12].clone().multiply(new Vector3(1, -2, 1)) },
+  {
+    index: 2,
+    position: blockVertexTable[2].clone().multiply(new Vector3(1, -2, 1)),
+  },
+  {
+    index: 3,
+    position: blockVertexTable[3].clone().multiply(new Vector3(1, -2, 1)),
+  },
+  {
+    index: 0,
+    position: blockVertexTable[0].clone().multiply(new Vector3(1, -2, 1)),
+  },
+  {
+    index: 1,
+    position: blockVertexTable[1].clone().multiply(new Vector3(1, -2, 1)),
+  },
+  {
+    index: 12,
+    position: blockVertexTable[12].clone().multiply(new Vector3(1, -2, 1)),
+  },
 ];
 
 type VertexLabelType = {
@@ -104,8 +182,7 @@ const VertexLabel = ({ isActive, index, position, color, background, onClick }: 
       <animated.div
         onClick={() => onClick(index)}
         className="flex items-center justify-center w-6 h-6 -mt-3 -ml-3 rounded-full cursor-pointer "
-        style={styles}
-      >
+        style={styles}>
         {index}
       </animated.div>
     </Html>
@@ -127,7 +204,7 @@ const generateBlockGeometry = (id: number, vertices: boolean[], neighbourVertice
   let hoverGeometry = null;
   let blockGeometry = null;
 
-  const topTriangles = getTopTriangles(vertices, [
+  const topGeometry = getTopGeometry(vertices, [
     neighbourVertices[25],
     neighbourVertices[26],
     neighbourVertices[27],
@@ -135,20 +212,28 @@ const generateBlockGeometry = (id: number, vertices: boolean[], neighbourVertice
     neighbourVertices[29],
   ]);
 
-  if (topTriangles) {
-    const leftTriangles = getSideTriangles(
+  if (topGeometry) {
+    const geometries: BufferGeometry[] = [topGeometry];
+
+    const leftGeometry = getSideGeometry(
       [0, 2, 4, 6, 8],
       [vertices[0], vertices[2], vertices[4], vertices[6], vertices[8]],
-      [neighbourVertices[0], neighbourVertices[1], neighbourVertices[2], neighbourVertices[3], neighbourVertices[4]]
+      [neighbourVertices[0], neighbourVertices[1], neighbourVertices[2], neighbourVertices[3], neighbourVertices[4]],
     );
+    if (leftGeometry) {
+      geometries.push(leftGeometry);
+    }
 
-    const rightTriangles = getSideTriangles(
+    const rightGeometry = getSideGeometry(
       [3, 1, 7, 5, 9],
       [vertices[3], vertices[1], vertices[7], vertices[5], vertices[9]],
-      [neighbourVertices[5], neighbourVertices[6], neighbourVertices[7], neighbourVertices[8], neighbourVertices[9]]
+      [neighbourVertices[5], neighbourVertices[6], neighbourVertices[7], neighbourVertices[8], neighbourVertices[9]],
     );
+    if (rightGeometry) {
+      geometries.push(rightGeometry);
+    }
 
-    const backTriangles = getSideTriangles(
+    const backGeometry = getSideGeometry(
       [1, 0, 5, 4, 10],
       [vertices[1], vertices[0], vertices[5], vertices[4], vertices[10]],
       [
@@ -157,10 +242,13 @@ const generateBlockGeometry = (id: number, vertices: boolean[], neighbourVertice
         neighbourVertices[12],
         neighbourVertices[13],
         neighbourVertices[14],
-      ]
+      ],
     );
+    if (backGeometry) {
+      geometries.push(backGeometry);
+    }
 
-    const frontTriangles = getSideTriangles(
+    const frontGeometry = getSideGeometry(
       [2, 3, 6, 7, 11],
       [vertices[2], vertices[3], vertices[6], vertices[7], vertices[11]],
       [
@@ -169,39 +257,25 @@ const generateBlockGeometry = (id: number, vertices: boolean[], neighbourVertice
         neighbourVertices[17],
         neighbourVertices[18],
         neighbourVertices[19],
-      ]
+      ],
     );
-
-    const triangles = topTriangles
-      .concat(leftTriangles)
-      .concat(rightTriangles)
-      .concat(backTriangles)
-      .concat(frontTriangles);
-
-    if (topTriangles.length > 0) {
-      hoverGeometry = geometryFromTriangles(topTriangles);
-
-      if (hoverGeometry) {
-        const idArray = new Int32Array(
-          Array.from({ length: hoverGeometry.getAttribute('position').array.length / 3 }).map(() => id)
-        );
-
-        const idAttribute = new BufferAttribute(idArray, 1);
-        hoverGeometry.setAttribute('id', idAttribute);
-      }
+    if (frontGeometry) {
+      geometries.push(frontGeometry);
     }
 
-    if (triangles.length > 0) {
-      blockGeometry = geometryFromTriangles(triangles);
+    blockGeometry = mergeBufferGeometries(geometries);
 
-      if (blockGeometry) {
-        const idArray = new Int32Array(
-          Array.from({ length: blockGeometry.getAttribute('position').array.length / 3 }).map(() => id)
-        );
+    if (blockGeometry) {
+      console.log(blockGeometry);
 
-        const idAttribute = new BufferAttribute(idArray, 1);
-        blockGeometry.setAttribute('id', idAttribute);
-      }
+      const idArray = new Int32Array(
+        Array.from({
+          length: blockGeometry.getAttribute('position').array.length / 3,
+        }).map(() => id),
+      );
+
+      const idAttribute = new BufferAttribute(idArray, 1);
+      blockGeometry.setAttribute('id', idAttribute);
     }
   }
 
@@ -212,15 +286,17 @@ const Block = () => {
   const [neighbourVertices, setNeighbourVertices] = useState<boolean[]>(Array.from({ length: 30 }).map(() => false));
   const [vertices, setVertices] = useState<boolean[]>(Array.from({ length: 14 }).map(() => true));
   const [geometry, setGeometry] = useState<BufferGeometry | null>(null);
+  const uvMap = useTexture('uv.jpg');
 
   const styles = useSpring({
     background: geometry ? colors.slate[200] : colors.rose[500],
     color: geometry ? colors.slate[600] : colors.rose[900],
   });
 
-  const { showVertices, showNeighbours } = useControls('Another Folder', {
+  const { showVertices, showNeighbours, showUv } = useControls('Toggle', {
     showVertices: false,
     showNeighbours: false,
+    showUv: false,
   });
 
   const edges = new BoxGeometry(blockSize.x, blockSize.y, blockSize.z);
@@ -290,7 +366,8 @@ const Block = () => {
 
       {geometry && (
         <mesh geometry={geometry}>
-          <meshStandardMaterial color={colors.violet[500]} />
+          {showUv && <meshBasicMaterial map={uvMap} />}
+          {!showUv && <meshNormalMaterial />}
         </mesh>
       )}
     </group>

@@ -35,11 +35,11 @@ function Scene() {
       <Lighting />
       {/* <Controls /> */}
       <SceneInterface />
-      {start && <Box position={start} />}
-      <Physics>
+      <PostProcessing />
+      <Physics timeStep={"vary"}>
         {start && <Player startPosition={start} />}
         {/* <Debug /> */}
-        <World />
+        <World isSkippingInteraction={true} />
         <Track />
       </Physics>
     </Canvas>

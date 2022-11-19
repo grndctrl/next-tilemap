@@ -14,6 +14,7 @@ import {
   RigidBodyApi,
   Debug,
 } from "@react-three/rapier";
+import PostProcessing from "./PostProcessing";
 
 function PlayScene() {
   const camera = new OrthographicCamera();
@@ -28,7 +29,7 @@ function PlayScene() {
       <Lighting />
       <Controls />
       <SceneInterface />
-
+      <PostProcessing />
       <Physics colliders={false} paused={true}>
         <World />
         <Track />

@@ -1,16 +1,16 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { RigidBodyApi } from "@react-three/rapier";
+import { useWorld } from "core/World";
 import { useControls } from "leva";
 import { useRef, RefObject, useEffect } from "react";
 import { Quaternion, Vector3 } from "three";
 import { useKeyControls } from "../hooks/keyControls";
 import HoverCar from "./HoverCar";
-import { useWorld } from "core/World";
 
 export const useFollowingCamera = (target: RefObject<RigidBodyApi>) => {
   const { camera, clock } = useThree();
-  const offset = new Vector3(0, 1, -4);
-  const lookAhead = new Vector3(0, 1, 4);
+  const offset = new Vector3(0, 20, -8);
+  const lookAhead = new Vector3(0, 0, 4);
 
   useFrame(() => {
     if (!target.current) return null;
@@ -53,7 +53,7 @@ const Player = ({ startPosition }: PlayerProps) => {
   const bodyRef = useRef<RigidBodyApi>(null);
   const { hoverForce, hoverHeight, driveSpeed, steeringSpeed } = useControls({
     hoverForce: {
-      value: 2,
+      value: 1.6,
       min: 0,
       max: 4,
       step: 0.01,
@@ -72,7 +72,7 @@ const Player = ({ startPosition }: PlayerProps) => {
     steeringSpeed: {
       value: 0.05,
       min: 0,
-      max: 2,
+      max: 0.5,
     },
   });
   const { forward, backward, left, right } = useKeyControls();
