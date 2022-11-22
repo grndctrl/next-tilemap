@@ -10,6 +10,7 @@ import {
   BlockType,
   blockVertexTable,
   calcTableIndex,
+  generateBlockGeometry,
   getSideGeometry,
   getTopGeometry,
   getTopTriangles,
@@ -200,92 +201,93 @@ const block: BlockType = {
   vertices: Array.from({ length: 14 }).map(() => true),
 };
 
-const generateBlockGeometry = (id: number, vertices: boolean[], neighbourVertices: boolean[]) => {
-  let hoverGeometry = null;
-  let blockGeometry = null;
+// const generateBlockGeometry = (id: number, vertices: boolean[], neighbourVertices: boolean[]) => {
+//   let hoverGeometry = null;
+//   let blockGeometry = null;
 
-  const topGeometry = getTopGeometry(vertices, [
-    neighbourVertices[25],
-    neighbourVertices[26],
-    neighbourVertices[27],
-    neighbourVertices[28],
-    neighbourVertices[29],
-  ]);
+//   const topGeometry = getTopGeometry(vertices, [
+//     neighbourVertices[25],
+//     neighbourVertices[26],
+//     neighbourVertices[27],
+//     neighbourVertices[28],
+//     neighbourVertices[29],
+//   ]);
 
-  if (topGeometry) {
-    const geometries: BufferGeometry[] = [topGeometry];
+//   if (topGeometry) {
+//     const geometries: BufferGeometry[] = [topGeometry];
 
-    const leftGeometry = getSideGeometry(
-      [0, 2, 4, 6, 8],
-      [vertices[0], vertices[2], vertices[4], vertices[6], vertices[8]],
-      [neighbourVertices[0], neighbourVertices[1], neighbourVertices[2], neighbourVertices[3], neighbourVertices[4]],
-    );
-    if (leftGeometry) {
-      geometries.push(leftGeometry);
-    }
+//     const leftGeometry = getSideGeometry(
+//       [0, 2, 4, 6, 8],
+//       [vertices[0], vertices[2], vertices[4], vertices[6], vertices[8]],
+//       [neighbourVertices[0], neighbourVertices[1], neighbourVertices[2], neighbourVertices[3], neighbourVertices[4]],
+//     );
+//     if (leftGeometry) {
+//       geometries.push(leftGeometry);
+//     }
 
-    const rightGeometry = getSideGeometry(
-      [3, 1, 7, 5, 9],
-      [vertices[3], vertices[1], vertices[7], vertices[5], vertices[9]],
-      [neighbourVertices[5], neighbourVertices[6], neighbourVertices[7], neighbourVertices[8], neighbourVertices[9]],
-    );
-    if (rightGeometry) {
-      geometries.push(rightGeometry);
-    }
+//     const rightGeometry = getSideGeometry(
+//       [3, 1, 7, 5, 9],
+//       [vertices[3], vertices[1], vertices[7], vertices[5], vertices[9]],
+//       [neighbourVertices[5], neighbourVertices[6], neighbourVertices[7], neighbourVertices[8], neighbourVertices[9]],
+//     );
+//     if (rightGeometry) {
+//       geometries.push(rightGeometry);
+//     }
 
-    const backGeometry = getSideGeometry(
-      [1, 0, 5, 4, 10],
-      [vertices[1], vertices[0], vertices[5], vertices[4], vertices[10]],
-      [
-        neighbourVertices[10],
-        neighbourVertices[11],
-        neighbourVertices[12],
-        neighbourVertices[13],
-        neighbourVertices[14],
-      ],
-    );
-    if (backGeometry) {
-      geometries.push(backGeometry);
-    }
+//     const backGeometry = getSideGeometry(
+//       [1, 0, 5, 4, 10],
+//       [vertices[1], vertices[0], vertices[5], vertices[4], vertices[10]],
+//       [
+//         neighbourVertices[10],
+//         neighbourVertices[11],
+//         neighbourVertices[12],
+//         neighbourVertices[13],
+//         neighbourVertices[14],
+//       ],
+//     );
+//     if (backGeometry) {
+//       geometries.push(backGeometry);
+//     }
 
-    const frontGeometry = getSideGeometry(
-      [2, 3, 6, 7, 11],
-      [vertices[2], vertices[3], vertices[6], vertices[7], vertices[11]],
-      [
-        neighbourVertices[15],
-        neighbourVertices[16],
-        neighbourVertices[17],
-        neighbourVertices[18],
-        neighbourVertices[19],
-      ],
-    );
-    if (frontGeometry) {
-      geometries.push(frontGeometry);
-    }
+//     const frontGeometry = getSideGeometry(
+//       [2, 3, 6, 7, 11],
+//       [vertices[2], vertices[3], vertices[6], vertices[7], vertices[11]],
+//       [
+//         neighbourVertices[15],
+//         neighbourVertices[16],
+//         neighbourVertices[17],
+//         neighbourVertices[18],
+//         neighbourVertices[19],
+//       ],
+//     );
+//     if (frontGeometry) {
+//       geometries.push(frontGeometry);
+//     }
 
-    blockGeometry = mergeBufferGeometries(geometries);
+//     blockGeometry = mergeBufferGeometries(geometries);
 
-    if (blockGeometry) {
-      console.log(blockGeometry);
+//     if (blockGeometry) {
+//       console.log(blockGeometry);
 
-      const idArray = new Int32Array(
-        Array.from({
-          length: blockGeometry.getAttribute('position').array.length / 3,
-        }).map(() => id),
-      );
+//       const idArray = new Int32Array(
+//         Array.from({
+//           length: blockGeometry.getAttribute('position').array.length / 3,
+//         }).map(() => id),
+//       );
 
-      const idAttribute = new BufferAttribute(idArray, 1);
-      blockGeometry.setAttribute('id', idAttribute);
-    }
-  }
+//       const idAttribute = new BufferAttribute(idArray, 1);
+//       blockGeometry.setAttribute('id', idAttribute);
+//     }
+//   }
 
-  return { hoverGeometry, blockGeometry };
-};
+//   return { hoverGeometry, blockGeometry };
+// };
 
 const Block = () => {
   const [neighbourVertices, setNeighbourVertices] = useState<boolean[]>(Array.from({ length: 30 }).map(() => false));
   const [vertices, setVertices] = useState<boolean[]>(Array.from({ length: 14 }).map(() => true));
   const [geometry, setGeometry] = useState<BufferGeometry | null>(null);
+  const [geometries, setGeometries] = useState<BufferGeometry[] | null>(null);
   const uvMap = useTexture('uv.jpg');
 
   const styles = useSpring({
@@ -318,8 +320,11 @@ const Block = () => {
   };
 
   useEffect(() => {
-    const { blockGeometry } = generateBlockGeometry(0, vertices, neighbourVertices);
+    const { blockGeometry, geometries: blockGeometries } = generateBlockGeometry(0, vertices, neighbourVertices);
     setGeometry(blockGeometry);
+    setGeometries(blockGeometries);
+    // console.log('🚀 ~ file: block.tsx ~ line 325 ~ blockGeometry', blockGeometry);
+    // console.log('🚀 ~ file: block.tsx ~ line 326 ~ blockGeometries', blockGeometries);
   }, [neighbourVertices, vertices]);
 
   return (
@@ -370,6 +375,15 @@ const Block = () => {
           {!showUv && <meshNormalMaterial />}
         </mesh>
       )}
+      {/* <>
+        {geometries &&
+          geometries.map((geom, index) => (
+            <mesh key={'geom' + index} geometry={geom}>
+              {showUv && <meshBasicMaterial map={uvMap} />}
+              {!showUv && <meshNormalMaterial />}
+            </mesh>
+          ))}
+      </> */}
     </group>
   );
 };

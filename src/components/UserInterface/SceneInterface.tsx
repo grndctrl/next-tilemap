@@ -10,9 +10,10 @@ import AddTrackBlock from './AddTrackBlock';
 import NextTrackBlock from './NextTrackBlock';
 import { useTrack } from 'core/Track/hooks';
 import { TrackBlockType } from 'core/Track';
+import { Vector3 } from 'three';
 
 const SceneInterface = () => {
-  const { blockHovered, blockMutated, setBlockMutated, currUISelection } = useInterfaceStore();
+  const { blockHovered, blocksHovered, blockMutated, setBlockMutated, currUISelection } = useInterfaceStore();
   const { getBlock, length } = useTrack();
   const { leftButton, rightButton, drag } = useMouseControls();
   const [lastTrackBlock, setLastTrackBlock] = useState<TrackBlockType | null>(null);
@@ -39,12 +40,31 @@ const SceneInterface = () => {
 
   return (
     <group>
-      {!blockMutated && blockHovered && (
+      {/*!blockMutated && blockHovered && (
         <Indicator {...blockHovered} showVertex={currUISelection === UISelection.SCULPT} />
-      )}
+      )*/}
       {currUISelection === UISelection.SCULPT && blockMutated && <Mutator {...blockMutated} />}
       {currUISelection === UISelection.ADDROAD && blockHovered && <AddTrackBlock block={blockHovered.block} />}
       {currUISelection === UISelection.EDITROAD && lastTrackBlock && <NextTrackBlock lastBlock={lastTrackBlock} />}
+      {/* {blocksHovered.blockHovered && blocksHovered.neighbours && (
+        <mesh position={blocksHovered.blockHovered.block.worldPosition} geometry={blocksHovered.geometry}>
+          <meshBasicMaterial color="red" />
+        </mesh>
+      )} */}
+      {blocksHovered && (
+        <group position={blocksHovered.blockHovered.block.worldPosition.clone().add(new Vector3(0, 0.1, 0))}>
+          <mesh geometry={blocksHovered.blockHovered.geometry}>
+            <meshBasicMaterial color="black" />
+          </mesh>
+          {blocksHovered.neighbours.map(({ position, geometry }, index) => {
+            return (
+              <mesh key={`neighbours-${index}`} position={position} geometry={geometry}>
+                <meshBasicMaterial color="black" />
+              </mesh>
+            );
+          })}
+        </group>
+      )}
     </group>
   );
 };

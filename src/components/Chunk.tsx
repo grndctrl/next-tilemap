@@ -1,25 +1,11 @@
-import { Box, useTexture } from '@react-three/drei';
-import { ThreeEvent, useFrame } from '@react-three/fiber';
 import { RigidBody } from '@react-three/rapier';
-import { useControls } from 'leva';
-import { remove } from 'lodash';
-import { forwardRef, memo, RefObject, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { BufferAttribute, BufferGeometry, Intersection, Mesh, Object3D, Raycaster, Vector3 } from 'three';
-import { mergeBufferGeometries, mergeVertices } from 'three-stdlib';
-import {
-  BlockType,
-  blockVertexTable,
-  calcTableIndex,
-  geometryFromTriangles,
-  getSideTriangles,
-  getTopTriangles,
-  generateBlockGeometry,
-} from '../utils/blockUtils';
-import { useInterfaceStore } from '../utils/interfaceStore';
-import { colors } from '../utils/tailwindDefaults';
-import { useWorld } from 'core/World';
-import { Edges } from '@react-three/drei';
 import GrassMaterial from 'assets/materials/Grass';
+import { useWorld } from 'core/World';
+import { forwardRef, memo, RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { BufferGeometry, Mesh, Object3D, Vector3 } from 'three';
+import { mergeBufferGeometries } from 'three-stdlib';
+import { generateBlockGeometry, getNeighbourVerticesForNeighboursInBlocks } from '../utils/blockUtils';
+import { useInterfaceStore } from '../utils/interfaceStore';
 
 type ChunkProps = {
   index: number;
@@ -33,89 +19,89 @@ type ChunkType = {
   blocks: number[];
 };
 
-const getNeighbourVerticesForNeighboursInBlocks = (neighbours: (BlockType | null)[]): boolean[] => {
-  const currentNeighbourVertices: boolean[] = [];
+// const getNeighbourVerticesForNeighboursInBlocks = (neighbours: (BlockType | null)[]): boolean[] => {
+//   const currentNeighbourVertices: boolean[] = [];
 
-  // left 0 2 4 6 8
-  if (neighbours[0]) {
-    currentNeighbourVertices.push(
-      neighbours[0].vertices[1],
-      neighbours[0].vertices[3],
-      neighbours[0].vertices[5],
-      neighbours[0].vertices[7],
-      neighbours[0].vertices[9],
-    );
-  } else {
-    currentNeighbourVertices.push(false, false, false, false, false);
-  }
+//   // left 0 2 4 6 8
+//   if (neighbours[0]) {
+//     currentNeighbourVertices.push(
+//       neighbours[0].vertices[1],
+//       neighbours[0].vertices[3],
+//       neighbours[0].vertices[5],
+//       neighbours[0].vertices[7],
+//       neighbours[0].vertices[9],
+//     );
+//   } else {
+//     currentNeighbourVertices.push(false, false, false, false, false);
+//   }
 
-  // right 3 1 7 5 9
-  if (neighbours[1]) {
-    currentNeighbourVertices.push(
-      neighbours[1].vertices[2],
-      neighbours[1].vertices[0],
-      neighbours[1].vertices[6],
-      neighbours[1].vertices[4],
-      neighbours[1].vertices[8],
-    );
-  } else {
-    currentNeighbourVertices.push(false, false, false, false, false);
-  }
+//   // right 3 1 7 5 9
+//   if (neighbours[1]) {
+//     currentNeighbourVertices.push(
+//       neighbours[1].vertices[2],
+//       neighbours[1].vertices[0],
+//       neighbours[1].vertices[6],
+//       neighbours[1].vertices[4],
+//       neighbours[1].vertices[8],
+//     );
+//   } else {
+//     currentNeighbourVertices.push(false, false, false, false, false);
+//   }
 
-  // back 1 0 5 4 10
-  if (neighbours[2]) {
-    currentNeighbourVertices.push(
-      neighbours[2].vertices[3],
-      neighbours[2].vertices[2],
-      neighbours[2].vertices[7],
-      neighbours[2].vertices[6],
-      neighbours[2].vertices[11],
-    );
-  } else {
-    currentNeighbourVertices.push(false, false, false, false, false);
-  }
+//   // back 1 0 5 4 10
+//   if (neighbours[2]) {
+//     currentNeighbourVertices.push(
+//       neighbours[2].vertices[3],
+//       neighbours[2].vertices[2],
+//       neighbours[2].vertices[7],
+//       neighbours[2].vertices[6],
+//       neighbours[2].vertices[11],
+//     );
+//   } else {
+//     currentNeighbourVertices.push(false, false, false, false, false);
+//   }
 
-  // front 2 3 6 7 11
-  if (neighbours[3]) {
-    currentNeighbourVertices.push(
-      neighbours[3].vertices[0],
-      neighbours[3].vertices[1],
-      neighbours[3].vertices[4],
-      neighbours[3].vertices[5],
-      neighbours[3].vertices[10],
-    );
-  } else {
-    currentNeighbourVertices.push(false, false, false, false, false);
-  }
+//   // front 2 3 6 7 11
+//   if (neighbours[3]) {
+//     currentNeighbourVertices.push(
+//       neighbours[3].vertices[0],
+//       neighbours[3].vertices[1],
+//       neighbours[3].vertices[4],
+//       neighbours[3].vertices[5],
+//       neighbours[3].vertices[10],
+//     );
+//   } else {
+//     currentNeighbourVertices.push(false, false, false, false, false);
+//   }
 
-  // bottom 2 3 0 1 12
-  if (neighbours[4]) {
-    currentNeighbourVertices.push(
-      neighbours[4].vertices[6],
-      neighbours[4].vertices[7],
-      neighbours[4].vertices[4],
-      neighbours[4].vertices[5],
-      neighbours[4].vertices[13],
-    );
-  } else {
-    currentNeighbourVertices.push(false, false, false, false, false);
-  }
+//   // bottom 2 3 0 1 12
+//   if (neighbours[4]) {
+//     currentNeighbourVertices.push(
+//       neighbours[4].vertices[6],
+//       neighbours[4].vertices[7],
+//       neighbours[4].vertices[4],
+//       neighbours[4].vertices[5],
+//       neighbours[4].vertices[13],
+//     );
+//   } else {
+//     currentNeighbourVertices.push(false, false, false, false, false);
+//   }
 
-  // top 6 7 4 5 13
-  if (neighbours[5]) {
-    currentNeighbourVertices.push(
-      neighbours[5].vertices[2],
-      neighbours[5].vertices[3],
-      neighbours[5].vertices[0],
-      neighbours[5].vertices[1],
-      neighbours[5].vertices[12],
-    );
-  } else {
-    currentNeighbourVertices.push(false, false, false, false, false);
-  }
+//   // top 6 7 4 5 13
+//   if (neighbours[5]) {
+//     currentNeighbourVertices.push(
+//       neighbours[5].vertices[2],
+//       neighbours[5].vertices[3],
+//       neighbours[5].vertices[0],
+//       neighbours[5].vertices[1],
+//       neighbours[5].vertices[12],
+//     );
+//   } else {
+//     currentNeighbourVertices.push(false, false, false, false, false);
+//   }
 
-  return currentNeighbourVertices;
-};
+//   return currentNeighbourVertices;
+// };
 
 export type ChunkRef = {
   mesh: RefObject<Mesh>;
@@ -130,127 +116,6 @@ const Chunk = forwardRef<Mesh, ChunkProps>(({ index, worldPosition, blocks }, re
   const { setBlockHovered } = useInterfaceStore();
   const { getBlock, chunkRenderKeys } = useWorld();
   const renderKey = chunkRenderKeys[index];
-
-  const [aoMap, map, displacementMap, normalMap, roughnessMap] = useTexture([
-    'Grass001_1K_AmbientOcclusion.jpg',
-    'Grass001_1K_Color.jpg',
-    'Grass001_1K_Displacement.jpg',
-    'Grass001_1K_Normal.jpg',
-    'Grass001_1K_Roughness.jpg',
-  ]);
-
-  //     const generateBlockGeometry = useCallback(
-  //       ({ id, neighbours, vertices }: BlockType) => {
-  //         const neighbourBlocks = neighbours.map((neighbour) =>
-  //           neighbour > -1 ? getBlock(neighbour) : null
-  //         );
-  //         const neighbourVertices: boolean[] =
-  //           getNeighbourVerticesForNeighboursInBlocks(neighbourBlocks);
-  //         let hoverGeometry = null;
-  //         let blockGeometry = null;
-  //
-  //         const topTriangles = getTopTriangles(vertices, [
-  //           neighbourVertices[25],
-  //           neighbourVertices[26],
-  //           neighbourVertices[27],
-  //           neighbourVertices[28],
-  //           neighbourVertices[29],
-  //         ]);
-  //
-  //         if (topTriangles) {
-  //           const leftTriangles = getSideTriangles(
-  //             [0, 2, 4, 6, 8],
-  //             [vertices[0], vertices[2], vertices[4], vertices[6], vertices[8]],
-  //             [
-  //               neighbourVertices[0],
-  //               neighbourVertices[1],
-  //               neighbourVertices[2],
-  //               neighbourVertices[3],
-  //               neighbourVertices[4],
-  //             ]
-  //           );
-  //
-  //           const rightTriangles = getSideTriangles(
-  //             [3, 1, 7, 5, 9],
-  //             [vertices[3], vertices[1], vertices[7], vertices[5], vertices[9]],
-  //             [
-  //               neighbourVertices[5],
-  //               neighbourVertices[6],
-  //               neighbourVertices[7],
-  //               neighbourVertices[8],
-  //               neighbourVertices[9],
-  //             ]
-  //           );
-  //
-  //           const backTriangles = getSideTriangles(
-  //             [1, 0, 5, 4, 10],
-  //             [vertices[1], vertices[0], vertices[5], vertices[4], vertices[10]],
-  //             [
-  //               neighbourVertices[10],
-  //               neighbourVertices[11],
-  //               neighbourVertices[12],
-  //               neighbourVertices[13],
-  //               neighbourVertices[14],
-  //             ]
-  //           );
-  //
-  //           const frontTriangles = getSideTriangles(
-  //             [2, 3, 6, 7, 11],
-  //             [vertices[2], vertices[3], vertices[6], vertices[7], vertices[11]],
-  //             [
-  //               neighbourVertices[15],
-  //               neighbourVertices[16],
-  //               neighbourVertices[17],
-  //               neighbourVertices[18],
-  //               neighbourVertices[19],
-  //             ]
-  //           );
-  //
-  //           const triangles = topTriangles
-  //             .concat(leftTriangles)
-  //             .concat(rightTriangles)
-  //             .concat(backTriangles)
-  //             .concat(frontTriangles);
-  //
-  //           if (topTriangles.length > 0) {
-  //             hoverGeometry = geometryFromTriangles(topTriangles);
-  //
-  //             if (hoverGeometry) {
-  //               // TODO: does this need to be that long / every position?
-  //               const idArray = new Int32Array(
-  //                 Array.from({
-  //                   length:
-  //                     hoverGeometry.getAttribute("position").array.length / 3,
-  //                 }).map(() => id)
-  //               );
-  //
-  //               const idAttribute = new BufferAttribute(idArray, 1);
-  //               hoverGeometry.setAttribute("id", idAttribute);
-  //             }
-  //           }
-  //
-  //           if (triangles.length > 0) {
-  //             blockGeometry = geometryFromTriangles(triangles);
-  //
-  //             if (blockGeometry) {
-  //               // TODO: does this need to be that long / every position?
-  //               const idArray = new Int32Array(
-  //                 Array.from({
-  //                   length:
-  //                     blockGeometry.getAttribute("position").array.length / 3,
-  //                 }).map(() => id)
-  //               );
-  //
-  //               const idAttribute = new BufferAttribute(idArray, 1);
-  //               blockGeometry.setAttribute("id", idAttribute);
-  //             }
-  //           }
-  //         }
-  //
-  //         return { hoverGeometry, blockGeometry };
-  //       },
-  //       [getBlock]
-  //     );
 
   const generateChunkGeometry = useCallback(
     (blocks: number[]) => {
@@ -290,8 +155,12 @@ const Chunk = forwardRef<Mesh, ChunkProps>(({ index, worldPosition, blocks }, re
   useEffect(() => {
     const geometries = blocks.map((blockIndex) => {
       const block = getBlock(blockIndex);
+
       if (block) {
-        return generateBlockGeometry(getBlock, block);
+        const neighbourBlocks = block.neighbours.map((neighbour) => (neighbour > -1 ? getBlock(neighbour) : null));
+        const neighbourVertices: boolean[] = getNeighbourVerticesForNeighboursInBlocks(neighbourBlocks);
+
+        return generateBlockGeometry(block.id, block.vertices, neighbourVertices);
       }
       return null;
     });

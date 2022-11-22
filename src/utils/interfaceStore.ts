@@ -19,7 +19,35 @@ type InterfaceStore = {
       block: BlockType;
       vertex: { index: number; position: Vector3 };
       geometry: BufferGeometry;
-    } | null
+    } | null,
+  ) => void;
+
+  blocksHovered: {
+    blockHovered: {
+      block: BlockType;
+      vertex: { index: number; position: Vector3 };
+      geometry: BufferGeometry;
+    };
+    neighbours: {
+      block: BlockType;
+      position: Vector3;
+      geometry: BufferGeometry;
+    }[];
+  } | null;
+
+  setBlocksHovered: (
+    blocksHovered: {
+      blockHovered: {
+        block: BlockType;
+        vertex: { index: number; position: Vector3 };
+        geometry: BufferGeometry;
+      };
+      neighbours: {
+        block: BlockType;
+        position: Vector3;
+        geometry: BufferGeometry;
+      }[];
+    } | null,
   ) => void;
 
   blockMutated: {
@@ -33,7 +61,7 @@ type InterfaceStore = {
       block: BlockType;
       vertex: { index: number; position: Vector3 };
       geometry: BufferGeometry;
-    } | null
+    } | null,
   ) => void;
 
   currUISelection: UISelection | null;
@@ -63,6 +91,12 @@ const interfaceStore = create<InterfaceStore>()(
 
       setBlockHovered: (blockHovered) => {
         set((state) => ({ blockHovered }));
+      },
+
+      blocksHovered: null,
+
+      setBlocksHovered: (blocksHovered) => {
+        set((state) => ({ blocksHovered }));
       },
 
       blockMutated: null,
@@ -96,8 +130,8 @@ const interfaceStore = create<InterfaceStore>()(
         set(() => ({ nextTrackBlock }));
       },
     }),
-    { name: 'Interface store' }
-  )
+    { name: 'Interface store' },
+  ),
 );
 
 const useInterfaceStore = createHook(interfaceStore);
