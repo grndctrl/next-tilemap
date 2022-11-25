@@ -3,26 +3,37 @@ import { BufferGeometry, Vector3 } from 'three';
 import { BlockType } from 'utils/blockUtils';
 
 type IndicatorProps = {
-  block: BlockType;
-  vertex: {
-    index: number;
-    position: Vector3;
+  blockHovered: {
+    block: BlockType;
+    vertex: { index: number; position: Vector3 };
+    geometry: BufferGeometry;
   };
-  geometry: BufferGeometry;
+  neighbours: {
+    block: BlockType;
+    position: Vector3;
+    geometry: BufferGeometry;
+  }[];
   showVertex: boolean;
 };
 
-const Indicator = ({ block, vertex, geometry, showVertex = false }: IndicatorProps) => {
+const Indicator = ({ blockHovered, neighbours, showVertex = false }: IndicatorProps) => {
   return (
-    <group position={block.worldPosition}>
+    <group position={blockHovered.block.worldPosition.clone().add(new Vector3(0, 0.1, 0))}>
       {showVertex && (
-        <Sphere args={[0.5]} position={vertex.position}>
-          <meshBasicMaterial color={'#000'} />
+        <Sphere args={[0.5]} position={blockHovered.vertex.position}>
+          <meshBasicMaterial color={'#f00'} />
         </Sphere>
       )}
-      <mesh geometry={geometry} scale={1.001} position={[0, 0.1, 0]}>
-        <meshBasicMaterial color={'#000'} />
+      <mesh geometry={blockHovered.geometry}>
+        <meshBasicMaterial color="black" />
       </mesh>
+      {neighbours.map(({ position, geometry }, index) => {
+        return (
+          <mesh key={`neighbours-${index}`} position={position} geometry={geometry}>
+            <meshBasicMaterial color="black" />
+          </mesh>
+        );
+      })}
     </group>
   );
 };

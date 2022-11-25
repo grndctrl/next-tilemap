@@ -40,30 +40,12 @@ const SceneInterface = () => {
 
   return (
     <group>
-      {/*!blockMutated && blockHovered && (
-        <Indicator {...blockHovered} showVertex={currUISelection === UISelection.SCULPT} />
-      )*/}
       {currUISelection === UISelection.SCULPT && blockMutated && <Mutator {...blockMutated} />}
-      {currUISelection === UISelection.ADDROAD && blockHovered && <AddTrackBlock block={blockHovered.block} />}
+      {currUISelection === UISelection.ADDROAD && blocksHovered && <AddTrackBlock {...blocksHovered} />}
       {currUISelection === UISelection.EDITROAD && lastTrackBlock && <NextTrackBlock lastBlock={lastTrackBlock} />}
-      {/* {blocksHovered.blockHovered && blocksHovered.neighbours && (
-        <mesh position={blocksHovered.blockHovered.block.worldPosition} geometry={blocksHovered.geometry}>
-          <meshBasicMaterial color="red" />
-        </mesh>
-      )} */}
-      {blocksHovered && (
-        <group position={blocksHovered.blockHovered.block.worldPosition.clone().add(new Vector3(0, 0.1, 0))}>
-          <mesh geometry={blocksHovered.blockHovered.geometry}>
-            <meshBasicMaterial color="black" />
-          </mesh>
-          {blocksHovered.neighbours.map(({ position, geometry }, index) => {
-            return (
-              <mesh key={`neighbours-${index}`} position={position} geometry={geometry}>
-                <meshBasicMaterial color="black" />
-              </mesh>
-            );
-          })}
-        </group>
+
+      {!blockMutated && blocksHovered && (
+        <Indicator {...blocksHovered} showVertex={currUISelection === UISelection.SCULPT} />
       )}
     </group>
   );

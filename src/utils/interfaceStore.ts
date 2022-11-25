@@ -1,11 +1,12 @@
-import { BufferGeometry, Vector3 } from 'three';
+import { BufferGeometry, BufferGeometry, Mesh, Vector3 } from 'three';
 import createHook from 'zustand';
 import { devtools } from 'zustand/middleware';
 import create from 'zustand/vanilla';
 // import { DirectionAngle } from '../components/Road';
 import { BlockType } from './blockUtils';
 import { UISelection } from './interfaceUtils';
-import { TrackAngle, TrackBlockType, TrackVariation } from 'core/Track';
+import { TrackAngle, TrackBlockType, TrackDirection, TrackVariation } from 'core/Track';
+import { createRef, MutableRefObject, RefObject } from 'react';
 
 type InterfaceStore = {
   blockHovered: {
@@ -75,13 +76,25 @@ type InterfaceStore = {
   trackSettings: {
     angle: TrackAngle;
     variation: TrackVariation;
+    direction: {
+      from: TrackDirection;
+      to: TrackDirection;
+    };
   };
 
-  setTrackSettings: (settings: { angle?: TrackAngle; variation?: TrackVariation }) => void;
+  setTrackSettings: (settings: {
+    angle?: TrackAngle;
+    variation?: TrackVariation;
+    direction?: { from: TrackDirection; to: TrackDirection };
+  }) => void;
 
   nextTrackBlock: TrackBlockType | 'blocked' | 'closed';
 
   setNextTrackBlock: (nextTrackBlock: TrackBlockType | 'blocked' | 'closed') => void;
+
+  chunkGeometries: BufferGeometry[];
+
+  setChunkGeometry: (geometry: BufferGeometry, index: number) => void;
 };
 
 const interfaceStore = create<InterfaceStore>()(
@@ -115,19 +128,38 @@ const interfaceStore = create<InterfaceStore>()(
         set(() => ({ isGeneratingWorld: toggle }));
       },
 
-      trackSettings: { angle: TrackAngle.STRAIGHT, variation: TrackVariation.FORWARD },
+      trackSettings: {
+        angle: TrackAngle.STRAIGHT,
+        variation: TrackVariation.FORWARD,
+        direction: {
+          from: TrackDirection.NORTH,
+          to: TrackDirection.SOUTH,
+        },
+      },
 
       setTrackSettings: (settings) => {
         const angle = settings.angle !== undefined ? settings.angle : get().trackSettings.angle;
         const variation = settings.variation !== undefined ? settings.variation : get().trackSettings.variation;
+        const direction = settings.direction !== undefined ? settings.direction : get().trackSettings.direction;
 
-        set(() => ({ trackSettings: { angle, variation } }));
+        set(() => ({ trackSettings: { angle, variation, direction } }));
       },
 
       nextTrackBlock: 'blocked',
 
       setNextTrackBlock: (nextTrackBlock) => {
         set(() => ({ nextTrackBlock }));
+      },
+
+      //
+
+      chunkGeometries: [],
+
+      setChunkGeometry: (geometry: BufferGeometry, index: number) => {
+        const chunkGeometries = get().chunkGeometries;
+        chunkGeometries[index] = geometry;
+
+        set(() => ({ chunkGeometries }));
       },
     }),
     { name: 'Interface store' },

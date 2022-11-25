@@ -1,4 +1,4 @@
-import { TrackAngle, TrackVariation } from 'core/Track';
+import { TrackAngle, TrackDirection, TrackVariation } from 'core/Track';
 import { useTrack } from 'core/Track/hooks';
 import { useEffect } from 'react';
 import IconAngleDown from 'svg/IconAngleDown';
@@ -13,10 +13,26 @@ import Toggle from 'ui/Toggle';
 import { config } from 'utils/colors';
 import { useInterfaceStore } from 'utils/interfaceStore';
 import { UISelection } from 'utils/interfaceUtils';
+import { BiRotateLeft, BiRotateRight } from 'react-icons/bi';
 
 const EditTrackModal = () => {
   const { trackSettings, setTrackSettings, nextTrackBlock, setCurrUISelection } = useInterfaceStore();
   const { length, setBlock, deleteBlock } = useTrack();
+
+  const handleDirectionClick = (rotateClockwise: boolean) => {
+    let from = trackSettings.direction.from;
+    let to = trackSettings.direction.to;
+
+    if (rotateClockwise) {
+      from = (from + 3) % 4;
+      to = (to + 3) % 4;
+    } else {
+      from = (from + 1) % 4;
+      to = (to + 1) % 4;
+    }
+
+    setTrackSettings({ direction: { from, to } });
+  };
 
   const handleVariationClick = (variation: TrackVariation) => {
     setTrackSettings({ variation });
@@ -45,27 +61,45 @@ const EditTrackModal = () => {
 
   return (
     <div className="p-4 m-4 text-xl bg-opacity-20 w-[190px] backdrop-blur-xl bg-slate-900 ui-crt">
-      {length === 0 && <div className="text-red-500">Pick start location</div>}
+      {length === 0 && (
+        <div className="text-red-500">
+          <div className="p-2 text-sm">Pick a start location</div>
+          <div className="flex flex-col">
+            <div className="w-[158px] flex justify-between">
+              <Button
+                onClick={() => {
+                  handleDirectionClick(false);
+                }}>
+                <BiRotateLeft />
+              </Button>
+              <Button
+                onClick={() => {
+                  handleDirectionClick(true);
+                }}>
+                <BiRotateRight />
+              </Button>
+            </div>
+            {/* <TrackSettingsConnector {...trackSettings} /> */}
+          </div>
+        </div>
+      )}
       {length > 0 && (
         <div>
           <div className="flex flex-col">
             <div className="w-[158px] flex justify-between">
               <Toggle
                 isActive={trackSettings.variation === TrackVariation.TURN_LEFT}
-                onClick={() => handleVariationClick(TrackVariation.TURN_LEFT)}
-              >
+                onClick={() => handleVariationClick(TrackVariation.TURN_LEFT)}>
                 <IconVariationTurnLeft className="block w-6 h-6" />
               </Toggle>
               <Toggle
                 isActive={trackSettings.variation === TrackVariation.FORWARD}
-                onClick={() => handleVariationClick(TrackVariation.FORWARD)}
-              >
+                onClick={() => handleVariationClick(TrackVariation.FORWARD)}>
                 <IconVariationForward className="block w-6 h-6" />
               </Toggle>
               <Toggle
                 isActive={trackSettings.variation === TrackVariation.TURN_RIGHT}
-                onClick={() => handleVariationClick(TrackVariation.TURN_RIGHT)}
-              >
+                onClick={() => handleVariationClick(TrackVariation.TURN_RIGHT)}>
                 <IconVariationTurnRight className="block w-6 h-6" />
               </Toggle>
             </div>
@@ -74,20 +108,17 @@ const EditTrackModal = () => {
               <div className="w-[158px] flex justify-between">
                 <Toggle
                   isActive={trackSettings.angle === TrackAngle.DOWN}
-                  onClick={() => handleAngleClick(TrackAngle.DOWN)}
-                >
+                  onClick={() => handleAngleClick(TrackAngle.DOWN)}>
                   <IconAngleDown className="block w-6 h-6" />
                 </Toggle>
                 <Toggle
                   isActive={trackSettings.angle === TrackAngle.STRAIGHT}
-                  onClick={() => handleAngleClick(TrackAngle.STRAIGHT)}
-                >
+                  onClick={() => handleAngleClick(TrackAngle.STRAIGHT)}>
                   <IconAngleStraight className="block w-6 h-6" />
                 </Toggle>
                 <Toggle
                   isActive={trackSettings.angle === TrackAngle.UP}
-                  onClick={() => handleAngleClick(TrackAngle.UP)}
-                >
+                  onClick={() => handleAngleClick(TrackAngle.UP)}>
                   <IconAngleUp className="block w-6 h-6" />
                 </Toggle>
               </div>

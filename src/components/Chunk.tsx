@@ -1,9 +1,10 @@
-import { RigidBody } from '@react-three/rapier';
+import { interactionGroups, RigidBody } from '@react-three/rapier';
 import GrassMaterial from 'assets/materials/Grass';
 import { useWorld } from 'core/World';
 import { forwardRef, memo, RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { BufferGeometry, Mesh, Object3D, Vector3 } from 'three';
 import { mergeBufferGeometries } from 'three-stdlib';
+import { useSceneStore } from 'utils/sceneStore';
 import { generateBlockGeometry, getNeighbourVerticesForNeighboursInBlocks } from '../utils/blockUtils';
 import { useInterfaceStore } from '../utils/interfaceStore';
 
@@ -113,7 +114,8 @@ const Chunk = forwardRef<Mesh, ChunkProps>(({ index, worldPosition, blocks }, re
   const [geometry, setGeometry] = useState<BufferGeometry | null>(null);
   const mesh = useRef<Mesh>(null);
 
-  const { setBlockHovered } = useInterfaceStore();
+  const setBlockHovered = useInterfaceStore((state) => state.setBlockHovered);
+  const setChunkGeometry = useSceneStore((state) => state.setChunkGeometry);
   const { getBlock, chunkRenderKeys } = useWorld();
   const renderKey = chunkRenderKeys[index];
 
@@ -171,9 +173,21 @@ const Chunk = forwardRef<Mesh, ChunkProps>(({ index, worldPosition, blocks }, re
   }, [blocks, getBlock, renderKey]);
 
   useEffect(() => {
-    const ChunkGeometry = generateChunkGeometry(blocks);
-    setGeometry(ChunkGeometry);
-  }, [blocks, generateChunkGeometry]);
+    const chunkGeometry = generateChunkGeometry(blocks);
+
+    if (chunkGeometry) {
+      chunkGeometry.computeBoundingBox();
+      setGeometry(chunkGeometry);
+      // setChunkGeometry(chunkGeometry, index);
+    }
+  }, [blocks, generateChunkGeometry, setChunkGeometry, index]);
+
+  useEffect(() => {
+    console.log('tick');
+    if (geometry) {
+      setChunkGeometry(geometry, index);
+    }
+  }, [geometry, index, setChunkGeometry]);
 
   return (
     <group position={worldPosition}>
